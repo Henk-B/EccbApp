@@ -19,7 +19,7 @@
 	<plugin name="cordova-plugin-app-version" />
 	<plugin name="cordova-plugin-ble-central" />
 
-    <icon src="img/truck-load.png" width="512" height="512" />
+    <icon src="img/etulipa_CMYK.png" width="150" height="150" />
 
     <feature name="http://api.phonegap.com/1.0/device" />
 	<preference name='phonegap-version' value='cli-8.1.1' />
@@ -43,16 +43,16 @@
 	</config-file-->
 	
 	<platform name="android">
-		<icon density="ldpi" src="img/truck-load.png" />
-        <icon density="mdpi" src="img/truck-load.png" />
-        <icon density="hdpi" src="img/truck-load.png" />
-        <icon density="xhdpi" src="img/truck-load.png" />
-        <icon density="xxhdpi" src="img/truck-load.png" />
-        <icon density="xxxhdpi" src="img/truck-load.png" />
+		<icon density="ldpi" src="img/etulipa_CMYK.png" />
+        <icon density="mdpi" src="img/etulipa_CMYK.png" />
+        <icon density="hdpi" src="img/etulipa_CMYK.png" />
+        <icon density="xhdpi" src="img/etulipa_CMYK.png" />
+        <icon density="xxhdpi" src="img/etulipa_CMYK.png" />
+        <icon density="xxxhdpi" src="img/etulipa_CMYK.png" />
 	</platform>
 	
 	<platform name="ios">
-		<icon src="img/truck-load.png" />
+		<icon src="img/etulipa_CMYK.png" />
 	</platform>
 	
 </widget>
