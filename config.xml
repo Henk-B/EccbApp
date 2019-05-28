@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="nl.whitebream.eccb" 
+    xmlns="http://www.w3.org/ns/widgets"
+    xmlns:gap="http://phonegap.com/ns/1.0"
+    version="0.1.0">
+
+    <name>Electronic Copyboard</name>
+    
+    <description>
+        Content editing tool for ECCB display system.
+    </description>
+    
+    <author email="eccb@whitebream.nl" href="https://whitebream.nl/eccb">
+        Henk Bliek, White Bream
+    </author>
+    
+	<plugin name="cordova-plugin-file" />
+	<plugin name="phonegap-plugin-barcodescanner" />
+	<plugin name="cordova-plugin-app-version" />
+	<plugin name="cordova-plugin-ble-central" />
+
+    <icon src="img/truck-load.png" width="512" height="512" />
+
+    <feature name="http://api.phonegap.com/1.0/device" />
+	<preference name='phonegap-version' value='cli-8.1.1' />
+    <preference name="orientation" value="default" />
+    <preference name="target-device" value="universal" />
+    <preference name="fullscreen" value="false" />
+    <preference name="KeyboardShrinksView" value="true" />
+    <preference name="DisallowOverscroll" value="true" />
+    <access origin="*" />
+
+	<!--preference name="permissions" value="none" />
+    <feature name="http://api.phonegap.com/1.0/camera" />
+    <feature name="http://api.phonegap.com/1.0/network" />
+    <feature name="http://api.phonegap.com/1.0/location" />
+    <feature name="http://api.phonegap.com/1.0/bluetooth" /-->
+
+	<!--config-file target="AndroidManifest.xml" parent="/*" mode="merge">
+		<uses-permission android:name="android.permission.CAMERA" />
+		<uses-feature android:name="android.hardware.camera" />
+		<uses-feature android:name="android.hardware.camera.autofocus" />
+	</config-file-->
+	
+	<platform name="android">
+		<icon density="ldpi" src="img/truck-load.png" />
+        <icon density="mdpi" src="img/truck-load.png" />
+        <icon density="hdpi" src="img/truck-load.png" />
+        <icon density="xhdpi" src="img/truck-load.png" />
+        <icon density="xxhdpi" src="img/truck-load.png" />
+        <icon density="xxxhdpi" src="img/truck-load.png" />
+	</platform>
+	
+	<platform name="ios">
+		<icon src="img/truck-load.png" />
+	</platform>
+	
+</widget>

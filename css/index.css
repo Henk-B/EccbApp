@@ -1,0 +1,109 @@
+.fadein
+{
+  opacity: 1;
+  -webkit-transition: opacity 0.5s ease-in;
+  background-color: rgba(0,0,0, 0);
+}
+
+.fadeout
+{
+  opacity: 0;
+  -webkit-transition: opacity 2s ease-out;
+  background-color: rgba(0,0,0, 0);
+}
+
+.dezaag_logo
+{
+  background: blue;
+  padding: 8px;
+  margin: 0;
+}
+.dezaag_logo p
+{
+  font: 48px arial, sans-serif, "Source Sans", helvetica;
+  font-weight: bold;
+  color: white;
+  width: 100%;
+  text-align: right;
+  margin: 0;
+}
+
+@media only screen and (orientation: landscape)
+{
+  img.horizontal {max-height:100%;}
+  img.vertical {display:none;}
+
+  #debugmessages {height: 10ex !important;}
+}
+
+@media only screen and (orientation: portrait)
+{
+  img.vertical {max-width:100%;}
+  img.horizontal {display:none;}
+
+  #debugmessages {height: 20ex !important;}
+}
+
+#debugmessages {max-height: 25vh !important;}
+
+
+#weight
+{
+  width: 100%;
+  text-align:center;
+  padding: 0;
+  margin: 0;
+}
+#weightdisplay
+{
+  font: 50px arial, sans-serif, helvetica;
+  font-weight: bold;
+  padding: 16px;
+  display: none;
+  //valign: middle;
+}
+#content table
+{
+  width: 100%;
+  border-spacing: 0;
+}
+#content td
+{
+  font: 10px;
+}
+#content td#ind_red
+{
+  background: darkred;
+}
+#content td#ind_yellow
+{
+  background: chocolate;
+}
+#content td#ind_green
+{
+  background: darkgreen;
+}
+
+
+#debug-data th, #debug-data td {
+  vertical-align:middle;
+  padding-top:0.1em;
+  padding-right:0.2em;
+  padding-left:0.2em;
+}
+
+.controlgroup-textinput
+{
+  padding-top: 0.2em;
+  padding-bottom: 0.2em;
+}
+
+.ui-controlgroup-horizontal .ui-controlgroup-controls
+{
+  display: inherit;
+}
+
+.ui-controlgroup-horizontal .ui-controlgroup-controls > .ui-btn
+{
+  float: inherit;
+}

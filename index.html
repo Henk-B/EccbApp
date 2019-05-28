@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name = "format-detection" content = "telephone=no"/>
+  <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+  <link rel="stylesheet" href="css/jquery.mobile-1.4.5.css">
+  <link rel="stylesheet" type="text/css" href="css/index.css" />
+  <!--script type="text/javascript" src="cordova.js"></script-->
+  <script src="js/Tocca.min.js"></script>
+  <title>Electronic Copyboard</title>
+
+  <script src="js/jquery.js"></script>
+
+  <script>
+    // Bind to "mobileinit" before you load jquery.mobile.js
+    $(document).on( "mobileinit", function()
+    {
+      //$.mobile.defaultPageTransition = "slide";
+      $.mobile.listview.prototype.options.headerTheme = "b";
+    });
+
+    pollTimer = 0;
+  </script>
+
+  <script src="js/jquery.mobile-1.4.5.js"></script>
+
+  <script>
+    $(function()
+    {
+      $(document).pagecontainer({defaults: true});
+      $("[data-role=header]").toolbar(); /* initialize header */
+
+      // Navigate to next page when the "next" button is clicked
+      $(".control .next").on("click", function()
+      {
+        //console.log("nextbtn, "+ prev + " <> " + next);
+        if(next)
+          $("body").pagecontainer("change", next);
+        else
+          app.splashshow();
+      });
+      $(".control .prev").on("click", function()
+      {
+        console.log("prevbtn, "+ prev + " <> " + next);
+        $("body").pagecontainer("change", prev, {reverse: true});
+      });
+    });
+
+    $(document).on("pagecontainerbeforetransition", function( event, ui )
+    {
+      // Get the references to the prev and next page that we stored in the data-next attribute
+      next = ui.toPage.jqmData("next");
+      prev = ui.toPage.jqmData("prev");
+
+      console.log("pagecontainerchange, "+ prev + " <> " + next);
+      //if(next)
+      //  $(".control .next").removeClass("ui-disabled");
+      //else
+      //  $(".control .next").addClass("ui-disabled");
+
+      if(prev)
+        $(".control .prev").removeClass("ui-disabled");
+      else
+        $(".control .prev").addClass("ui-disabled");
+        
+      $("#title").html(ui.toPage.jqmData("title"));
+      
+      app.setStatus("");
+    });
+
+    // Navigate to next page on swipe left
+    $(document).on("swipeleft", $(document), function()
+    {
+      if(next)
+      {
+        //console.log("swipe, "+ prev + " <> " + next);
+        //$("body").pagecontainer("change", next);
+      }
+    });
+    $(document).on("swiperight", $(document), function()
+    {
+      if(prev)
+      {
+        //console.log("swipe, "+ prev + " <> " + next);
+        //$("body").pagecontainer("change", prev, {reverse: true});
+      }
+    });
+
+    // Take over the device back button
+    $(window).on("navigate", function (event, data)
+    {
+      var direction = data.state.direction;
+      if (direction == 'back')
+      {
+        if($("body").pagecontainer("getActivePage").attr('id') == "content")
+        {
+          app.disconnect(true);
+          navigator.app.exitApp();	// Android only
+        }
+        else
+        {
+          $("body").pagecontainer("change", "#content", {transition:"fade"});
+        }
+      }
+      return(false);
+    });
+
+    $.fn.redraw = function()
+    {
+      return $(this).each(function()
+      {
+        var redraw = this.offsetHeight;
+      });
+    };
+  </script>
+
+  <script type="text/javascript" src="cordova.js"></script>
+  <script type="text/javascript" src="js/index.js"></script>
+
+  <style>
+    /* Prevent text selection while swiping with mouse */
+    .ui-header, .ui-title, .trivia-btn
+    {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      -o-user-select: none;
+      user-select: none;
+    }
+  </style>
+</head>
+<body style="background-color: #252525;">
+
+
+<div data-role="header" id="header" style="overflow:hidden;" class="ui-page-theme-a" data-position="fixed" data-tap-toggle="false">
+  <h1 id="title">Elctronic Copyboard</h1>
+  <div data-role="controlgroup" class="control ui-btn-right" data-type="horizontal" data-mini="true">
+    <a id="connectIcon" href="#bluetooth" data-role="button" data-icon="check" data-iconpos="notext" class="ui-state-disabled">Bluetooth</a>
+    <!--a href="#" data-role="button" data-icon="gear">Options</a-->
+  </div>
+  <div data-role="controlgroup" class="control ui-btn-left" data-type="horizontal" data-mini="true">
+    <a href="#" class="prev" data-role="button" data-icon="arrow-l" data-iconpos="notext" data-theme="d">Previous</a>
+    <a href="#" class="next" data-role="button" data-icon="arrow-r" data-iconpos="notext" data-theme="d">Next</a>
+  </div>
+</div><!-- /header -->
+
+
+<div data-role="page" id="splash" data-title="SPLASH" data-next="#content" class="ui-page-theme-a">
+  <div id="image" style="height:100%; text-align: center;">
+    <img class="vertical" src="images\Etulipa_logo.png" style="object-fit:contain; height:100%; width:100%;" />
+    <img class="horizontal" src="images\Etulipa_logo.png" style="object-fit:contain; height:100%; width:100%;" />
+  </div>
+
+  <script>
+    splashHide = function(event)
+    {
+      if($("body").pagecontainer("getActivePage").attr('id') == "splash")
+      {
+        if(event)
+          event.stopPropagation();
+        if(vSplashTimer)
+          clearTimeout(vSplashTimer);
+        $("body").pagecontainer("change", next, {reverse: true});
+      }
+    }
+    
+    $(document).ready(function()
+    {
+      splashSizes = function()
+      {
+        $(header).hide();
+        $(header).toolbar('disable');
+        $(splash).css('height', window.screen.height);
+        $(splash).css('width', window.screen.width);
+        $(splash).css('padding-top', '0px');
+      }
+    
+      splashSizes();
+      document.getElementById("splash").addEventListener("click", splashHide, true);
+      vSplashTimer = setTimeout(splashHide, 5000);
+      
+      $(document).on("pagecontainerchange", function(event, ui)
+      {
+        if($("body").pagecontainer("getActivePage").attr('id') == "splash")
+          splashSizes();
+      });
+
+      $(window).on("orientationchange", function()
+      {
+        if($("body").pagecontainer("getActivePage").attr('id') == "splash")
+          splashSizes();
+      });
+
+      $(document).on("pagecontainerbeforechange", function(event, ui)
+      {
+        if($("body").pagecontainer("getActivePage").attr('id') == "splash")
+        {
+          $(header).toolbar('enable');
+          $(header).show();
+        }
+      });
+    });
+  </script>
+</div>
+
+<style>
+  input.eccb {font-size: 24px; font-family: monospace;}
+  screentext div input {float:left;}
+  screentext div a {float:right;}
+</style>
+<div data-role="page" id="content" data-title="CONTENT" data-prev="#bluetooth" data-next="#calibration" class="ui-page-theme-a">
+    <div id="screenlist">
+      <a href="#" class="inc" data-role="button" data-icon="plus" data-iconpos="notext" data-theme="a" style="float:right; z-index:1;" onclick="return ChangeSpring('#gain-front', true);">Increase</a>
+      <div style="white-space: nowrap;">
+        <input type="button" data-inline="true" data-mini="true" value="Screen1">
+        <input type="button" data-inline="true" data-mini="true" value="Screen2">
+        <input type="button" data-inline="true" data-mini="true" value="Screen3">
+        <!--input type="button" data-inline="true" data-mini="true" value="Screen4">
+        <input type="button" data-inline="true" data-mini="true" value="Screen5"-->
+      </div>
+    </div>
+
+    <div id="screenparams" class="ui-body ui-corner-all" onclick="ScreenParamsEdit();">
+    text
+    </div>
+
+    <div id="screenconfig" class="ui-body ui-corner-all" onclick="ScreenParamsExit();" style="display:none;">
+    editmode
+    </div>
+  
+  <div id="screentext">
+    <input type="text" name="line1" id="line1" class="eccb" data-mini="true" value="Sample text" />
+    <input type="text" name="line2" id="line2" class="eccb" data-mini="true" value="Sample text" />
+    <input type="text" name="line3" id="line3" class="eccb" data-mini="true" value="Sample text" />
+    <input type="text" name="line4" id="line4" class="eccb" data-mini="true" value="Sample text" />
+    <input type="text" name="line5" id="line5" class="eccb" data-mini="true" value="Sample text" />
+  </div>
+  
+
+  <script>
+      ScreenParamsEdit = function()
+      {
+        // Hide screen params and screen text, show screenconfig
+        $('#screenparams').css('display', 'none');
+        $('#screentext').css('display', 'none');
+        $('#screenconfig').css('display', '');
+      }
+
+      ScreenParamsExit = function()
+      {
+        // Show screen params and screen text, hide screenconfig
+        $('#screenconfig').css('display', 'none');
+        $('#screenparams').css('display', '');
+        $('#screentext').css('display', '');
+      }
+      
+    $(document).ready(function()
+    {
+      
+      // Register onclick handler for screen parameters
+      screenparams.onclick = ScreenParamsEdit;
+      screenconfig.onclick = ScreenParamsExit;
+      
+      $.fn.textfill = function(options)
+      {
+        $(weight).parent().css('height', $(weight).parent().css('min-height'));
+       
+        var fontSize = options.maxFontPixels;
+        var ourText = $('#weightdisplay', this);
+        var maxHeight = $(weight).height();
+        var maxWidth = $(weight).width();
+        var textHeight = ourText.outerHeight();
+        var textWidth = ourText.outerWidth();
+
+        var tmp = ourText.html();
+        if(tmp.length < 6)
+        {
+          ourText.html('0000KG');
+          ourText.redraw();
+        }
+
+        ourText.css('font-size', 50);
+        ourText.css('marginTop', '');
+        ourText.css('display', 'none');
+
+        do
+        {
+          ourText.css('font-size', fontSize);
+          do
+          {
+            textHeight = ourText.outerHeight();
+          }
+          while(textHeight == 0);
+
+          textWidth = ourText.outerWidth();
+          fontSize -= fontSize / 50;
+        }
+        while((textHeight > maxHeight || textWidth > maxWidth) && (fontSize > 50));
+
+        //console.log(maxHeight + ", " + textHeight + " - " + maxWidth + ", " + textWidth);
+        if(maxHeight - textHeight > 0)
+        {
+          // adjust vertical position
+          ourText.css('marginTop', (maxHeight - textHeight) / 2);
+        }
+        //ourText.css('backgroundColor', 'red');
+
+        ourText.html(tmp);
+        ourText.css('display', 'inline-block');
+        return this;
+      }
+
+      $(window).on("orientationchange", function()
+      {
+        if($("body").pagecontainer("getActivePage").attr('id') == "content")
+        {
+          $('#weightdisplay').css('font-size', 50);
+          $('#weightdisplay').css('marginTop', '');
+          $('#weightdisplay').css('display', 'none');
+
+          $("div#weight").textfill({ maxFontPixels: 500 });
+          //window.setTimeout(function(){$("div#weight").textfill({ maxFontPixels: 500 });}, 150);
+        }
+      });
+
+      $(document).on("pagecontainerchange", function( event, ui )
+      {
+        if($("body").pagecontainer("getActivePage").attr('id') == "content")
+        {
+          $(header).toolbar("updatePagePadding");
+          $("div#weight").textfill({ maxFontPixels: 500 });
+          //window.setTimeout(function(){$("div#weight").textfill({ maxFontPixels: 500 });}, 150);
+        }
+      });
+
+    });
+
+    mainValue = function(args)
+    {
+      if(args === undefined)
+        var args = ["---", "0"];
+
+      if(lastValue == args)
+        return;
+      lastValue = args;
+
+      $('.weight').html(args[0]);
+
+      if(indicators)
+      {
+        args[1] = parseInt(args[1]);
+
+        $('td.ind_red').css('background', args[1] & 0x01 ? "red" : "darkred");
+        $('.ind_red').css('color', args[1] & 0x01 ? "red" : "darkred");
+
+        $('td.ind_yellow').css('background', args[1] & 0x02 ? "yellow" : "chocolate");
+        $('.ind_yellow').css('color', args[1] & 0x02 ? "yellow" : "chocolate");
+
+        $('td.ind_green').css('background', args[1] & 0x04 ? "lime" : "darkgreen");
+        $('.ind_green').css('color', args[1] & 0x04 ? "lime" : "darkgreen");
+      }
+    }
+    lastValue = ["",""];
+  </script>
+
+  <script type="text/javascript">
+    $(document).ready(function()
+    {
+      window.setInterval(function () {app.pollWeight()}, 1000);
+    });
+  </script>
+</div>
+
+
+<div data-role="page" id="bluetooth" data-title="BLUETOOTH" data-next="#content" class="ui-page-theme-b">
+  <fieldset data-role="controlgroup">
+    <label for="deviceList">Device:</label>
+    <select name="deviceList "id="deviceList">
+      <option value="0">...</option>
+    </select>
+  </fieldset>
+  
+  <fieldset data-role="controlgroup">
+    <a href="#" id="connectButton" data-role="button" class="ui-state-disabled">Connect</a>
+    <a href="#" id="disconnectBtn" data-role="button" class="ui-state-disabled">Disconnect</a>
+    <a href="#" id="listButton" data-role="button">List Devices</a>
+  </fieldset>
+  
+  <fieldset data-role="controlgroup">
+    <a href="#" id="connectQrButton" data-role="button">Connect with QR code</a>
+    <a href="#" id="connectQrButton2" data-role="button" onclick="btConnectQR();">Connect with QR code</a>
+  </fieldset>
+
+  <div data-role="footer" data-position="fixed" data-tap-toggle="false">
+    <div class="statusMessage">&nbsp;</div>
+  </div>
+
+  <script type="text/javascript">
+    $(document).ready(function()
+    {
+      $(document).on("pagecontainerchange", function( event, ui )
+      {
+        if($("body").pagecontainer("getActivePage").attr('id') == "bluetooth")
+        {
+        /*
+          deviceList.innerHTML = "";
+          //app.disable(sendBluetooth);
+
+          bluetoothSerial.list(btResults, btFail);
+          
+          var btFail = function()
+          {
+            app.setStatus("Bluetooth failure...");
+          };
+          
+          var btResult = function(device)
+          {
+            var option = $('#deviceList option[value="' + device.address + '"]');
+            if(option.length <= 0)
+            {
+              app.setStatus("Add " + device.name + " (" + device.address + " " + device.class + ")");
+              option = document.createElement('option');
+              
+              if(device.class == 768)
+              {
+                deviceList.insertBefore(option, deviceList.childNodes[0]);
+                if(deviceList.val() === 'undefined')
+                  deviceList.val(0);
+              }
+              else
+                deviceList.appendChild(option);
+            }
+            option.value = device.address;
+            option.innerHTML = device.name + " (" + device.address + ")";
+
+            if($('#deviceList').selectmenu('instance') !== undefined)
+              $('#deviceList').selectmenu('refresh');
+          };
+          
+          var btResults = function(devices)
+          {
+            //app.setStatus("Parse results");
+            devices.forEach(function(device)
+            {
+              btResult(device);
+            });
+          };
+          */
+        }
+      });
+    });
+
+    btConnectQR = function()
+    {
+      cordova.plugins.barcodeScanner.scan(function(result)
+      {
+        if(!result.cancelled)
+          app.connect2("Anonymous via QR", result.text);
+      });
+    }
+  
+  </script></div>
+
+
+<div data-role="page" id="calibration" data-title="SETTINGS&AMP;CALIBRATION" data-prev="#content" data-next="#values" class="ui-page-theme-b">
+  <form>
+    <fieldset data-role="collapsible">
+      <legend>Suspension configuration...</legend>
+
+      <label for"front-susp">Front axle:</label>
+      <select name="front-susp" id="front-susp">
+        <option value="0" selected disabled>...</option>
+        <option value="1">Wishbone</option>
+        <option value="2">Leafspring</option>
+      </select>
+
+      <label for"rear-susp">Rear axle:</label>
+      <select name="rear-susp" id="rear-susp">
+        <option value="0" selected>Leafspring</option>
+        <option value="2">Trailing arm</option>
+        <!--option value="2">Wishbone</option-->
+      </select>
+
+    </fieldset>
+
+    <fieldset data-role="collapsible">
+      <legend>System Settings...</legend>
+
+      <!--label for"door-level">Door switch signal level:</label>
+      <select name="door-level" id="door-level" onchange="app.sendDataRaw('$POL=' + $('option:selected',this).val());">
+        <option value="0" selected>Negative (ground) contact...</option>
+        <option value="1">Positive contact</option>
+      </select-->
+
+      <label for"buzzer-mode">Buzzer mode:</label>
+      <select name="buzzer-mode" id="buzzer-mode" onchange="app.sendDataRaw('$BUZ=' + $('option:selected',this).val() * $('#buzzer-time').val() );">
+        <option value="1" selected>Always beep on overweight</option>
+        <option value="-1">Beep max once while door open</option>
+        <option value="0">Beep disabled</option>
+      </select>
+
+      <label for"buzzer-time">Buzzer duration:</label>
+      <input type="range" name="buzzer-time" id="buzzer-time" data-highlight="true" min="0" max="15" value="5" onchange="app.sendDataRaw('$BUZ=' + $(this).val() * $('#buzzer-mode option:selected').val() );" />
+
+    </fieldset>
+
+    <fieldset data-role="collapsible">
+      <legend>Reference Weight...</legend>
+
+      <p>For best accuracy, the reference weight should be roughly halfway between rear and front axle.</p>
+      <input type="hidden" value="0" name="dist-rear" id="dist-rear" />
+
+      <label for="dist-front">Wheel base:</label>
+      <input type="number" value="350" name="dist-front" id="dist-front" />
+
+      <label for="dist-ref">Distance from rear-axle to middle of reference weight:</label>
+      <input type="number" value="150" name="dist-ref" id="dist-ref" />
+
+      <label for"reference-slider">Reference weight (kg)</label>
+      <input type="range" name="reference-slider" id="reference-slider" data-highlight="true" min="0" max="1000" value="500" step="1"/>
+
+    </fieldset>
+
+    <input type="button" id="calibrateZero" value="Calibrate zero load" onclick="app.sendDataRaw('$CAL=1,0,' + (parseInt($('#front-susp').val()) + parseInt($('#rear-susp').val())) + ',' + 0 + ',' + parseInt($('#dist-ref').val()) + ',' + parseInt($('#dist-front').val()) + ',' + parseInt($('#reference-slider').val()));"/>
+    <input type="button" id="calibrateReference" value="Calibrate reference load" class="ui-state-disabled" onclick="app.sendDataRaw('$CAL=2');"/>
+
+    <div data-role="collapsible">
+      <legend>Spring constants...</legend>
+      <script type="text/javascript">
+        ChangeSpring = function(varx, dir)
+        {
+          var val = $(varx).val();
+          if(val !== "") 
+          {
+            val = parseInt(val);
+            if(dir) val += Math.round(val / 100) || 1;
+            else val -= Math.round(val / 100) || 1;
+            $(varx).val(val);
+          }
+          return false;
+        }
+      </script>
+
+      <label for="gain-front">Front sensors:</label>
+      <div data-role="controlgroup" data-type="horizontal">
+        <a href="#" class="inc" data-role="button" data-icon="carat-u" data-iconpos="notext" data-theme="d" style="float:right;" onclick="return ChangeSpring('#gain-front', true);">Increase</a>
+        <a href="#" class="dec" data-role="button" data-icon="carat-d" data-iconpos="notext" data-theme="d" style="float:right;" onclick="return ChangeSpring('#gain-front', false);">Decrease</a>
+        <input type="number" name="gain-front" id="gain-front" data-wrapper-class="controlgroup-textinput ui-btn" />
+      </div>
+        
+      <label for="gain-rear">Rear sensors:</label>
+      <div data-role="controlgroup" data-type="horizontal">
+        <a href="#" class="inc" data-role="button" data-icon="carat-u" data-iconpos="notext" data-theme="d" style="float:right;" onclick="return ChangeSpring('#gain-rear', true);">Increase</a>
+        <a href="#" class="dec" data-role="button" data-icon="carat-d" data-iconpos="notext" data-theme="d" style="float:right;" onclick="return ChangeSpring('#gain-rear', false);">Decrease</a>
+        <input type="number" name="gain-rear" id="gain-rear" data-wrapper-class="controlgroup-textinput ui-btn" />
+      </div>
+        
+      <input type="button" id="calibrateConstants" value="Set spring constants" class="ui-state-disabled" onclick="app.sendDataRaw('$CAL=3,' + parseInt($('#gain-front').val()) + ',' + parseInt($('#gain-rear').val()));"/>
+        
+    </div>
+    
+    <label for="limit-weight">Limit Weight (kg):</label>
+    <input type="number" value="500" name="limit-weight" id="limit-weight" onchange="app.sendDataRaw('$MAX=' + $(this).val());" />
+
+    <label for="vehicle-weight">Vehicle empty weight (kg):</label>
+    <input type="number" value="0" name="vehicle-weight" id="vehicle-weight" onchange="app.sendDataRaw('$CAR=' + $(this).val());" />
+
+  </form>
+
+  <div data-role="footer" data-position="fixed" data-tap-toggle="false">
+    <div class="statusMessage">&nbsp;</div>
+  </div>
+
+  <script type="text/javascript">
+    pollCalibrationTimer = "";
+    prevRearDist = 0;
+    prevRefDist = 0;
+    prevFrontDist = 0;
+    prevRearGain = 0;
+    prevFrontGain = 0;
+
+    calcRatio = function(front, rear, ref)
+    {
+      window.localStorage.setItem("reference_front", front);
+      window.localStorage.setItem("reference_rear", rear);
+      window.localStorage.setItem("reference_ref", ref);
+    }
+
+    changeAxisSlider = function()
+    {
+      var axis = [];
+
+      axis[0] = $('#dist-rear-slider').val();
+      axis[1] = $('#dist-front-slider').val();
+
+      axis[2] = $('#dist-rear-slider2').val();
+      axis[3] = $('#dist-ref-slider2').val();
+
+      if(axis[0] != axis[2])
+      {
+        $('#dist-rear-slider2').val(axis[0]);
+        $('#dist-ref-slider').rangeslider('refresh');
+      }
+
+      if(axis[1] < axis[3])
+      {
+        $('#dist-ref-slider2').val(axis[1]);
+        $('#dist-ref-slider').rangeslider('refresh');
+      }
+
+      calcRatio(axis[1], axis[0], axis[3]);
+    }
+
+    changeAxisValue = function()
+    {
+      var axis = [];
+
+      axis[0] = $('#dist-rear').val();
+      axis[1] = $('#dist-front').val();
+      axis[3] = $('#dist-ref').val();
+
+      calcRatio(axis[1], axis[0], axis[3]);
+    }
+
+    changeRefSlider = function()
+    {
+      var axis = [];
+
+      axis[0] = $('#dist-rear-slider').val();
+      axis[1] = $('#dist-front-slider').val();
+
+      axis[2] = $('#dist-rear-slider2').val();
+      axis[3] = $('#dist-ref-slider2').val();
+
+      if(axis[0] != axis[2])
+      {
+        $('#dist-rear-slider2').val(axis[0]);
+        $('#dist-ref-slider').rangeslider('refresh');
+      }
+
+      if(axis[1] < axis[3])
+      {
+        $('#dist-ref-slider2').val(axis[1]);
+        $('#dist-ref-slider').rangeslider('refresh');
+      }
+
+      calcRatio(axis[1], axis[0], axis[3]);
+    }
+
+    changeRefValue = function()
+    {
+      var axis = [];
+
+      axis[0] = $('#dist-rear').val();
+      axis[1] = $('#dist-front').val();
+      axis[3] = $('#dist-ref').val();
+
+      calcRatio(axis[1], axis[0], axis[3]);
+    }
+
+    changeReferenceWeight = function()
+    {
+    }
+
+    $(document).ready(function()
+    {
+      $('#dist-rear').on("change", changeAxisValue);
+      $('#dist-ref').on("change", changeRefValue);
+      $('#dist-front').on("change", changeAxisValue);
+
+      $(document).on("pagecontainerchange", function( event, ui )
+      {
+        if($("body").pagecontainer("getActivePage").attr('id') == "calibration")
+        {
+          var axis = [];
+          axis[1] = window.localStorage.getItem("reference_front");
+          axis[0] = window.localStorage.getItem("reference_rear");
+          axis[3] = window.localStorage.getItem("reference_ref");
+
+          if(axis[1] == 0) axis[1] = 750;
+          if(axis[3] == 0) axis[3] = 500;
+          axis[0] = 0;
+
+          $('#dist-front').val(axis[1]);
+          $('#dist-rear').val(axis[0]);
+          $('#dist-ref').val(axis[3]);
+
+          calcRatio(axis[1], axis[0], axis[3]);
+
+          $('#gain-front').val(window.localStorage.getItem("gain_front"));
+          $('#gain-rear').val(window.localStorage.getItem("gain_rear"));
+          
+          var pollCalibration = function()
+          {
+            //console.log("pollstate " + pollState);
+            switch(pollState)
+            {
+              case 1:
+                app.sendDataRaw("$VER?");
+                break
+
+              case 2:
+                app.sendDataRaw("$CAR?");
+                break
+
+              case 3:
+                app.sendDataRaw("$POL?");
+                break
+
+              case 4:
+                app.sendDataRaw("$BUZ?");
+                break;
+
+              case 5:
+                app.sendDataRaw("$MAX?");
+                break;
+
+              default:
+                app.sendDataRaw("$CAL?");
+                return; // No restart of timer!
+            }
+            pollState++;
+            pollCalibrationTimer = window.setTimeout(pollCalibration, 100);
+          };
+
+          pollState = 1;
+          pollCalibrationTimer = window.setTimeout(pollCalibration, 100);
+        }
+        else
+        {
+          window.clearTimeout(pollCalibrationTimer);
+        }
+      });
+
+      calibrationPol = function(args)
+      {
+        if(args === undefined)
+          return;
+
+        // Set doorswitch polarity selector to actual value
+        $('#door-level').val(args[0]).selectmenu('refresh',true);
+      }
+
+      calibrationBuz = function(args)
+      {
+        if(args === undefined)
+          return;
+
+        var mode = parseInt(args);
+        if(mode < 0) mode = -1;
+        if(mode > 0) mode = 1;
+        $('#buzzer-mode').val(mode).selectmenu('refresh',true);
+
+        // Set buzzer duration
+        $('#buzzer-time').val(Math.abs(parseInt(args[0]))).slider('refresh',true);
+      }
+
+      calibrationMax = function(args)
+      {
+        if(args === undefined)
+          return;
+
+        // Set maximum weight slider to actual value
+        $('#limit-weight').val(args[0]);
+      }
+
+      calibrationCar = function(args)
+      {
+        if(args === undefined)
+          return;
+
+        // Set vehicle weight slider to actual value
+        $('#vehicle-weight').val(args[0]);
+      }
+
+      calibrationStatus = function(args)
+      {
+        if(args === undefined)
+        {
+          var args = [0,0,500,0,100,250,400];
+          app.setStatus("Cal status: unknown...");
+        }
+        else
+        {
+          switch(parseInt(args[3], 16))
+          {
+            case 1:  app.setStatus("Cal zero OK"); break;
+            case 15: app.setStatus("Calibration OK"); break;
+            default: app.setStatus("Cal unknown: " + args); break;
+          }
+        }
+
+        // Cal state report : @CAL=v0,v1,v2,v3,v4...
+        // v0 = alignment of CPU module
+        // v1 = alignment of front axis
+        // v2 = reference weight
+        // v3 = calibration status.
+        // v4 = rear axle distance
+        // v5 = reference distance
+        // v6 = front axle distance
+        // v7 = gain front suspension
+        // v8 = gain read suspension
+
+        if(parseInt(args[3], 16) >= 1)
+        {
+          app.enable(calibrateReference);
+          app.enable(calibrateConstants);
+        }
+        else
+        {
+          app.disable(calibrateReference);
+          app.disable(calibrateConstants);
+        }
+
+        // Alignment of CPU mounting
+        $('#cpu-mount').val(args[0]).selectmenu('refresh',true);
+
+        // Alignment of front suspension
+        if(args[1] > 2)
+        {
+          $('#front-susp').val(args[1] - 2).selectmenu('refresh',true);
+          $('#rear-susp').val(2).selectmenu('refresh',true);
+        }
+        else
+        {
+          $('#front-susp').val(args[1]).selectmenu('refresh',true);
+          $('#rear-susp').val(0).selectmenu('refresh',true);
+        }
+
+        if(args[2] == 0)
+          app.sendDataRaw('$CAL=3,500');
+
+        $('#reference-slider').val(args[2]);
+        $('#reference-slider').slider('refresh');
+
+        var dist = parseFloat(args[4]);
+        if((dist > 0) && (dist != prevRearDist))
+        {
+          $('#dist-rear').val(dist);
+          prevRearDist = dist;
+        }
+        dist = parseFloat(args[5]);
+        if((dist > 0) && (dist != prevRefDist))
+        {
+          $('#dist-ref').val(dist);
+          prevRefDist = dist;
+        }
+        dist = parseFloat(args[6]);
+        if((dist > 0) && (dist != prevFrontDist))
+        {
+          $('#dist-front').val(dist);
+          prevFrontDist = dist;
+        }
+        if(args[7] === undefined)
+        {
+          $('#gain-front').val("");
+          $('#gain-rear').val("");
+        }
+        else
+        {
+          dist = parseFloat(args[7]);
+          if((dist != 0) && (dist != $('#gain-front').val()))
+          {
+            $('#gain-front').val(dist);
+          }
+          dist = parseFloat(args[8]);
+          if((dist != 0) && (dist != $('#gain-rear').val()))
+          {
+            $('#gain-rear').val(dist);
+          }
+        }
+      }
+
+      calibrationConfig = function(args)
+      {
+      }
+
+      // subscribe to @CAL, @CFG, @MAX
+
+    });
+  </script>
+</div>
+
+
+<div data-role="page" id="values" data-title="DIAGNOSTICS" data-prev="#calibration" data-next="#tomtom" class="ui-page-theme-b">
+  <table data-role="table" id="debug-data" data-mode="reflow2" class="ui-responsive">
+    <thead><tr>
+      <th>Weight</th><th class="weight">---</th><th class="ind_green"><b>&check;</b></th>
+      <th class="ind_yellow"><b>&excl;</b></th><th class="ind_red"><b>&cross;</b></th>
+    </tr><tr>
+      <th>Node</th><th>Vect</th><th>Gain</th><th>Zero</th><th>Angle</th><th>Weight</th>
+    </tr></thead>
+    <tbody>
+      <!--tr id="node1"><th>Center</th><td>x</td><td>x</td><td>x</td><td>0</td><td>-</td></tr-->
+      <tr id="node2"><th>Front<br>Right</th><td>x</td><td>x</td><td>x</td><td>0</td><td>0</td></tr>
+      <tr id="node3"><th>Front<br>Left</th><td>x</td><td>x</td><td>x</td><td>0</td><td>0</td></tr>
+      <tr id="node4"><th>Rear<br>Right</th><td>x</td><td>x</td><td>x</td><td>0</td><td>0</td></tr>
+      <tr id="node5"><th>Rear<br>Left</th><td>x</td><td>x</td><td>x</td><td>0</td><td>0</td></tr>
+    </tbody>
+  </table>
+
+  <fieldset data-role="controlgroup">
+    <div class="ui-grid-b">
+      <div class="ui-block-a"><input type="button" value="$CAL?" onclick="app.sendDataRaw(this.value);"/></div>
+      <div class="ui-block-b"><input type="button" value="$CFG?" onclick="pollState=0; pollCfg();"/></div>
+      <div class="ui-block-c"><input type="button" value="$ANG?" onclick="app.sendDataRaw(this.value);"/></div>
+    </div>
+  </fieldset>
+
+  <div data-role="footer" data-position="fixed" data-tap-toggle="false">
+    <textarea id="debugmessages" rows="8" readonly="readonly" style="overflow-y:auto;"></textarea>
+    <div class="statusMessage">&nbsp;</div>
+  </div>
+
+  <script type="text/javascript">
+    $(document).ready(function()
+    {
+      $(document).on("pagecontainerchange", function( event, ui )
+      {
+        if($("body").pagecontainer("getActivePage").attr('id') == "values")
+        {
+          var pollCfg = function()
+          {
+            //console.log("pollstate " + pollState);
+            if(pollState <= 5)
+            {
+              app.sendDataRaw("$CFG?" + pollState);
+              pollState++;
+              pollTimer = window.setTimeout(pollCfg, 100);
+            }
+            else
+            {
+              app.sendDataRaw("$ANG?");
+              pollTimer = window.setTimeout(pollCfg, 500);
+            }
+          };
+
+          pollState = 1;
+          pollTimer = window.setTimeout(pollCfg, 100);
+          debugmessages.scrollTop = debugmessages.scrollHeight;
+        }
+        else
+        {
+          window.clearTimeout(pollTimer);
+        }
+      });
+    });
+
+    valuesConfig = function(args)
+    {
+      if(args === undefined)
+      {
+        //valuesConfig([1,'-','','0','0','-']);
+        valuesConfig([2,'-','','0','0','0']);
+        valuesConfig([3,'-','','0','0','0']);
+        valuesConfig([4,'-','','0','0','0']);
+        valuesConfig([5,'-','','0','0','0']);
+        return;
+      }
+
+      var cols = $("#node" + args[0]).find('td').get();
+      if(cols)
+      {
+        cols[0].innerHTML = args[1];
+        cols[1].innerHTML = args[2] * args[3];
+        cols[2].innerHTML = args[4];
+        cols[3].innerHTML = "?";
+      }
+    }
+
+    valuesAngles = function(args)
+    {
+      if(args === undefined)
+      {
+        var args = [0,0,0,0,0,0,0,0,0];
+      }
+
+      //$("#node1").find('td').get()[3].innerHTML = args[0] / 100;
+      $("#node2").find('td').get()[3].innerHTML = args[1] / 100;
+      $("#node3").find('td').get()[3].innerHTML = args[2] / 100;
+      $("#node4").find('td').get()[3].innerHTML = args[3] / 100;
+      $("#node5").find('td').get()[3].innerHTML = args[4] / 100;
+
+      $("#node2").find('td').get()[4].innerHTML = args[5] / 10;
+      $("#node3").find('td').get()[4].innerHTML = args[6] / 10;
+      $("#node4").find('td').get()[4].innerHTML = args[7] / 10;
+      $("#node5").find('td').get()[4].innerHTML = args[8] / 10;
+    }
+  </script>
+</div>
+
+
+<div data-role="page" id="tomtom" data-title="TOMTOM" data-prev="#values" data-next="#about" class="ui-page-theme-b">
+  <form>
+    <div style="text-align:center;"><br>
+      <img src="images\ttt-wf-logo-white-medium-2x.png" align="center" style="max-height:25%; max-width:80%;"/>
+      <br><br>
+    </div>
+
+    <div data-role="controlgroup">
+      <label for"btdevices">Bluetooth devices in range:</label>
+      <select name="btdevices" id="btdevices" size="4" onchange="app.enable(sendBluetooth);">
+      </select>
+    </div>
+
+    <input type="button" id="sendBluetooth" value="Send bluetooth ID" class="ui-state-disabled" onclick="app.sendDataRaw('$TOM=' + $('#btdevices').val());"/>
+
+    <div data-role="footer" data-position="fixed" data-tap-toggle="false">
+      <div class="statusMessage">&nbsp;</div>
+    </div>
+  </form>
+  
+  <script type="text/javascript">
+    $(document).ready(function()
+    {
+      $(document).on("pagecontainerchange", function( event, ui )
+      {
+        if($("body").pagecontainer("getActivePage").attr('id') == "tomtom")
+        {
+          btdevices.innerHTML = "";
+          app.disable(sendBluetooth);
+
+          var btFail = function()
+          {
+            app.setStatus("Bluetooth failure...");
+          };
+          
+          var bluetoothScan = function()
+          {
+            //app.setStatus("Scanning");
+            //console.log("bluetoothScan");
+    
+            <!-- https://www.npmjs.com/package/cordova-plugin-bluetooth-serial -->
+            bluetoothSerial.list(btResults, btFail);
+            bluetoothSerial.setDeviceDiscoveredListener(btResult);
+            bluetoothSerial.discoverUnpaired(btResults, btFail);
+
+            btScanTimer = window.setTimeout(bluetoothScan, 1000);
+          };
+          
+          var btResult = function(device)
+          {
+            var option = $('#btdevices option[value="' + device.address + '"]');
+            if(option.length <= 0)
+            {
+              app.setStatus("Add " + device.name + " (" + device.address + " " + device.class + ")");
+              option = document.createElement('option');
+              option.value = device.address;
+              option.innerHTML = device.name + " (" + device.address + ")";
+              
+              if(device.class == 768)
+              {
+                btdevices.insertBefore(option, btdevices.firstChild);
+                if($('#btdevices').val() === null)
+                  $('#btdevices').val(option.value);
+              }
+              else
+                btdevices.appendChild(option);
+                
+              if($('#btdevices').selectmenu('instance') !== undefined)
+                $('#btdevices').selectmenu('refresh');
+            }
+          };
+          
+          var btResults = function(devices)
+          {
+            devices.forEach(function(device)
+            {
+              btResult(device);
+            });
+          };
+
+          btScanTimer = window.setTimeout(bluetoothScan, 250);
+        }
+        else
+        {
+          bluetoothSerial.clearDeviceDiscoveredListener();
+          window.clearTimeout(btScanTimer);
+        }
+      });
+    });
+          var btResult2 = function(device)
+          {
+            var option = $('#btdevices option[value="' + device.address + '"]');
+            if(option.length <= 0)
+            {
+              app.setStatus("Add " + device.name + " (" + device.address + " " + device.class + ")");
+              option = document.createElement('option');
+              option.value = device.address;
+              option.innerHTML = device.name + " (" + device.address + ")";
+              
+              if(device.class == 768)
+              {
+                btdevices.insertBefore(option, btdevices.firstChild);
+                if($('#btdevices').val() === null)
+                  $('#btdevices').val(option.value);
+              }
+              else
+                btdevices.appendChild(option);
+                
+              if($('#btdevices').selectmenu('instance') !== undefined)
+                $('#btdevices').selectmenu('refresh');
+            }
+          };
+    
+  </script>
+</div>
+
+
+<div data-role="page" id="about" data-title="ABOUT" data-prev="#tomtom" data-next="#splash" class="ui-page-theme-b">
+  <div id="logo" class="dezaag_logo"><p>Load Monitor</p></div>
+  <div>
+    <p>LoadMonitor B.V.<br>Postbus 7239<br>3280AA Numansdorp<br>The Netherlands</p>
+  </div>
+  
+  <fieldset data-role="collapsible">
+    <h3><span id="versionapp">App version</span></h3>
+  </fieldset>
+
+  <fieldset data-role="collapsible">
+    <h3><span id="versioncpu">CPU version</span></h3>
+    <a href="#" data-role="button" id="updatecpu" class="ui-state-disabled" onclick="FirmwareSend(0, this.path);"><span>...</span></a>
+  </fieldset>
+
+  <fieldset data-role="collapsible">
+    <h3 class="ui-btn-icon-right ui-icon-star"><span id="versiontft">Display version</span></h3>
+    <a href="#" data-role="button" id="updatetft" class="ui-state-disabled" onclick="FirmwareSend(1, this.path);"><span>...</span></a>
+  </fieldset>
+    
+  <div id="version"></div>
+  <script type="text/javascript">
+    $(document).ready(function()
+    {
+      //app.enable(update-cpu);
+
+      $(document).on("pagecontainerchange", function(event, ui)
+      {
+        if($("body").pagecontainer("getActivePage").attr('id') == "about")
+        {
+          cordova.getAppVersion.getVersionNumber(function (version)
+          {
+            document.getElementById("versionapp").innerText = "App version " + version;
+          });
+
+          function listDir(path)
+          {
+            window.resolveLocalFileSystemURL(path, function(fileSystem)
+            {
+              var reader = fileSystem.createReader();
+              reader.readEntries(function(entries)
+              {
+                entries.forEach(function(entry)
+                {
+                  //document.getElementById("version").innerHTML += "<br>" + entry.name;
+                  if(entry.name.indexOf("77-067-103") != -1)
+                  {
+                    $(updatecpu).children().first().text(entry.name);
+                    $(updatecpu).attr('path', entry.fullPath);
+                    $(versioncpu).closest('h3').addClass('ui-btn-icon-right ui-icon-star');
+                    $(updatecpu).removeClass('ui-state-disabled');
+                  }
+                  else if(entry.name.indexOf("77-067-107") != -1)
+                  {
+                    $(updatetft).children().first().text(entry.name);
+                    $(updatetft).attr('path', entry.fullPath);
+                    $(versiontft).closest('h3').addClass('ui-btn-icon-right ui-icon-star');
+                    $(updatetft).removeClass('ui-state-disabled');
+                  }
+                  //else
+                  //console.log(entry);
+                });
+              }, function (err)
+              {
+                app.setStatus("Error " + err);
+              });
+            }, function (err)
+            {
+              app.setStatus("Error " + err);
+            });
+          }
+          listDir(cordova.file.applicationDirectory + "www/firmware/");
+        }
+      });
+    });
+    
+    FirmwareSend = function(index, path)
+    {
+      app.setStatus("Send " + index + "=" + path);
+      
+      var reader = new FileReader();
+      reader.onload = function(event)
+      {
+        app.setStatus("Read " + reader.result);
+      };
+      reader.onerror = function(err)
+      {
+        app.setStatus("Error " + err);
+      };
+      reader.readAsArrayBuffer(path);
+    }
+  </script>
+
+  <div data-role="footer" data-position="fixed" data-tap-toggle="false">
+    <!--img class="vertical" src="images\Zaag_GR_Animatie.gif"/-->
+    <div class="statusMessage">&nbsp;</div>
+  </div>
+</div>
+
+
+<script type="text/javascript">
+  app.initialize();
+</script>
+
+</body>
+</html>
