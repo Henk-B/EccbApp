@@ -210,59 +210,34 @@
   screentext div a {float:right;}
 </style>
 <div data-role="page" id="content" data-title="CONTENT" data-prev="#bluetooth" data-next="#calibration" class="ui-page-theme-a">
-    <div id="screenlist">
 
-    <div id="screenControl" data-role="controlgroup" class="control" data-type="horizontal" data-mini="true">
-      <a id="browsePrv" href="#" data-role="button" data-icon="carat-l" data-iconpos="notext" class="ui-state-disabled">Previous</a>
-      <input id="screenIndex" type="number" data-inline="true" data-mini="true" readonly="readonly" value="#1">
-      <input id="screenName" type="button" data-inline="true" data-mini="true" value="Screen1">
-      <a id="screenMove" href="#" data-role="button" data-icon="library" data-iconpos="notext" class="ui-state-disabled">Move</a>
-      <a id="screenCfg" href="#" data-role="button" data-icon="bullets" data-iconpos="notext" class="ui-state-disabled">Config</a>
-      <a id="screenRefresh" href="#" data-role="button" data-icon="eye" data-iconpos="notext" class="ui-state-disabled">Refresh</a>
-      <a id="screenUndo" href="#" data-role="button" data-icon="recycle" data-iconpos="notext" class="ui-state-disabled">Undo</a>
-      <a id="screenSaveAll" href="#" data-role="button" data-icon="check" data-iconpos="notext" class="ui-state-disabled">Save all</a>
-      <a id="browseFwd" href="#" data-role="button" data-icon="carat-r" data-iconpos="notext" class="ui-state-disabled">Next</a>
-    </div>
+  <table><tr>
+    <td style="text-align:left;"><a id="browsePrv" href="#" data-role="button" data-icon="carat-l" data-iconpos="notext" data-inline="true" class="ui-state-disabled">Previous</a>
+      <input id="screenIndex" type="button" data-inline="true" data-mini="true" readonly="readonly" class="ui-state-disabled" value="#1">
+      <a id="screenMove" href="#" data-role="button" data-icon="library" data-iconpos="notext" data-inline="true">Move</a></td>
+    <td style="text-align:center;"><input id="screenName" type="text" data-inline="true" data-mini="true" value="Screen1"></td>
+    <td style="text-align:right;"><a id="screenCfg" href="#" data-role="button" data-icon="clock" data-iconpos="notext" data-inline="true">Config</a>
+      <a id="screenRefresh" href="#" data-role="button" data-icon="eye" data-iconpos="notext" data-inline="true">Refresh</a>
+      <a id="screenUndo" href="#" data-role="button" data-icon="recycle" data-iconpos="notext" data-inline="true">Undo</a>
+      <a id="screenSaveAll" href="#" data-role="button" data-icon="check" data-iconpos="notext" data-inline="true" class="ui-state-disabled">Save all</a>
+      <a id="browseFwd" href="#" data-role="button" data-icon="carat-r" data-iconpos="notext" data-inline="true">Next</a></td>
+  </tr></table>
 
-      <!--a href="#" class="inc" data-role="button" data-icon="plus" data-iconpos="notext" data-theme="a" style="float:right; z-index:1;" onclick="return ChangeSpring('#gain-front', true);">Increase</a>
-      <div style="white-space: nowrap;">
-        <input type="button" data-inline="true" data-mini="true" value="Screen1">
-        <input type="button" data-inline="true" data-mini="true" value="Screen2">
-        <input type="button" data-inline="true" data-mini="true" value="Screen3">
-      </div-->
-
-
-    <div id="screenparams" class="ui-body ui-corner-all" onclick="ScreenParamsEdit();">
+  <div id="screenparams" class="ui-body ui-corner-all" onclick="ScreenParamsEdit();">
     text
-    </div>
+  </div>
 
-    <div id="screenconfig" class="ui-body ui-corner-all" onclick="ScreenParamsExit();" style="display:none;">
+  <div id="screenconfig" class="ui-body ui-corner-all" onclick="ScreenParamsExit();" style="display:none;">
     editmode
-    </div>
-  
-  <div id="screentext">
-    <div id="line1" data-role="controlgroup" class="control" data-type="horizontal" data-mini="true">
-      <a href="#" data-role="button" data-icon="bullets" data-iconpos="notext" style="float:right; z-index:1;" onclick=""></a>
-      <input type="text" class="eccb" data-mini="true" value="Sample text" />
-    </div>
-    <div id="line2" data-role="controlgroup" class="control" data-type="horizontal" data-mini="true">
-      <a href="#" data-role="button" data-icon="bullets" data-iconpos="notext" style="float:right; z-index:1;" onclick=""></a>
-      <input type="text" class="eccb" data-mini="true" value="Sample text" />
-    </div>
-    <div id="line3" data-role="controlgroup" class="control" data-type="horizontal" data-mini="true">
-      <a href="#" data-role="button" data-icon="bullets" data-iconpos="notext" style="float:right; z-index:1;" onclick=""></a>
-      <input type="text" class="eccb" data-mini="true" value="Sample text" />
-    </div>
-    <div id="line4" data-role="controlgroup" class="control" data-type="horizontal" data-mini="true">
-      <a href="#" data-role="button" data-icon="bullets" data-iconpos="notext" style="float:right; z-index:1;" onclick=""></a>
-      <input type="text" class="eccb" data-mini="true" value="Sample text" />
-    </div>
-    <div id="line5" data-role="controlgroup" class="control" data-type="horizontal" data-mini="true">
-      <a href="#" data-role="button" data-icon="bullets" data-iconpos="notext" style="float:right; z-index:1;" onclick=""></a>
-      <input type="text" class="eccb" data-mini="true" value="Sample text" />
-    </div>    
   </div>
   
+  <table id="screentext" style="text-align:center;">
+    <tr id="line1"><td><input type="text" class="eccb" data-mini="true" value="Sample text" /></td><td style="width:1%;"><a href="#" data-role="button" data-icon="bullets" data-iconpos="notext" data-inline="true" onclick=""></a></td></tr>
+    <tr id="line2"><td><input type="text" class="eccb" data-mini="true" value="Sample text" /></td><td style="width:1%;"><a href="#" data-role="button" data-icon="bullets" data-iconpos="notext" data-inline="true" onclick=""></a></td></tr>
+    <tr id="line3"><td><input type="text" class="eccb" data-mini="true" value="Sample text" /></td><td style="width:1%;"><a href="#" data-role="button" data-icon="bullets" data-iconpos="notext" data-inline="true" onclick=""></a></td></tr>
+    <tr id="line4"><td><input type="text" class="eccb" data-mini="true" value="Sample text" /></td><td style="width:1%;"><a href="#" data-role="button" data-icon="bullets" data-iconpos="notext" data-inline="true" onclick=""></a></td></tr>
+    <tr id="line5"><td><input type="text" class="eccb" data-mini="true" value="Sample text" /></td><td style="width:1%;"><a href="#" data-role="button" data-icon="bullets" data-iconpos="notext" data-inline="true" onclick=""></a></td></tr>
+  </tr></table>
 
   <script>
       ScreenParamsEdit = function()
