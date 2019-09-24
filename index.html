@@ -211,6 +211,8 @@
 </style>
 <div data-role="page" id="content" data-title="CONTENT" data-prev="#bluetooth" data-next="#calibration" class="ui-page-theme-a">
     <div id="screenlist">
+
+    <div id="screenControl" data-role="controlgroup" class="control" data-type="horizontal" data-mini="true">
       <a id="browsePrv" href="#" data-role="button" data-icon="carat-l" data-iconpos="notext" class="ui-state-disabled">Previous</a>
       <input id="screenIndex" type="number" data-inline="true" data-mini="true" readonly="readonly" value="#1">
       <input id="screenName" type="button" data-inline="true" data-mini="true" value="Screen1">
@@ -220,16 +222,15 @@
       <a id="screenUndo" href="#" data-role="button" data-icon="recycle" data-iconpos="notext" class="ui-state-disabled">Undo</a>
       <a id="screenSaveAll" href="#" data-role="button" data-icon="check" data-iconpos="notext" class="ui-state-disabled">Save all</a>
       <a id="browseFwd" href="#" data-role="button" data-icon="carat-r" data-iconpos="notext" class="ui-state-disabled">Next</a>
+    </div>
 
-      <a href="#" class="inc" data-role="button" data-icon="plus" data-iconpos="notext" data-theme="a" style="float:right; z-index:1;" onclick="return ChangeSpring('#gain-front', true);">Increase</a>
+      <!--a href="#" class="inc" data-role="button" data-icon="plus" data-iconpos="notext" data-theme="a" style="float:right; z-index:1;" onclick="return ChangeSpring('#gain-front', true);">Increase</a>
       <div style="white-space: nowrap;">
         <input type="button" data-inline="true" data-mini="true" value="Screen1">
         <input type="button" data-inline="true" data-mini="true" value="Screen2">
         <input type="button" data-inline="true" data-mini="true" value="Screen3">
-        <!--input type="button" data-inline="true" data-mini="true" value="Screen4">
-        <input type="button" data-inline="true" data-mini="true" value="Screen5"-->
-      </div>
-    </div>
+      </div-->
+
 
     <div id="screenparams" class="ui-body ui-corner-all" onclick="ScreenParamsEdit();">
     text
@@ -240,16 +241,26 @@
     </div>
   
   <div id="screentext">
-    <a id="line1cfg" href="#" data-role="button" data-icon="bullets" data-iconpos="notext" style="float:right; z-index:1;" onclick=""></a>
-    <input type="text" name="line1" id="line1" class="eccb" data-mini="true" value="Sample text" />
-    <a id="line2cfg" href="#" data-role="button" data-icon="bullets" data-iconpos="notext" style="float:right; z-index:1;" onclick=""></a>
-    <input type="text" name="line2" id="line2" class="eccb" data-mini="true" value="Sample text" />
-    <a id="line3cfg" href="#" data-role="button" data-icon="bullets" data-iconpos="notext" style="float:right; z-index:1;" onclick=""></a>
-    <input type="text" name="line3" id="line3" class="eccb" data-mini="true" value="Sample text" />
-    <a id="line4cfg" href="#" data-role="button" data-icon="bullets" data-iconpos="notext" style="float:right; z-index:1;" onclick=""></a>
-    <input type="text" name="line4" id="line4" class="eccb" data-mini="true" value="Sample text" />
-    <a id="line5cfg" href="#" data-role="button" data-icon="bullets" data-iconpos="notext" style="float:right; z-index:1;" onclick=""></a>
-    <input type="text" name="line5" id="line5" class="eccb" data-mini="true" value="Sample text" />
+    <div id="line1" data-role="controlgroup" class="control" data-type="horizontal" data-mini="true">
+      <a href="#" data-role="button" data-icon="bullets" data-iconpos="notext" style="float:right; z-index:1;" onclick=""></a>
+      <input type="text" class="eccb" data-mini="true" value="Sample text" />
+    </div>
+    <div id="line2" data-role="controlgroup" class="control" data-type="horizontal" data-mini="true">
+      <a href="#" data-role="button" data-icon="bullets" data-iconpos="notext" style="float:right; z-index:1;" onclick=""></a>
+      <input type="text" class="eccb" data-mini="true" value="Sample text" />
+    </div>
+    <div id="line3" data-role="controlgroup" class="control" data-type="horizontal" data-mini="true">
+      <a href="#" data-role="button" data-icon="bullets" data-iconpos="notext" style="float:right; z-index:1;" onclick=""></a>
+      <input type="text" class="eccb" data-mini="true" value="Sample text" />
+    </div>
+    <div id="line4" data-role="controlgroup" class="control" data-type="horizontal" data-mini="true">
+      <a href="#" data-role="button" data-icon="bullets" data-iconpos="notext" style="float:right; z-index:1;" onclick=""></a>
+      <input type="text" class="eccb" data-mini="true" value="Sample text" />
+    </div>
+    <div id="line5" data-role="controlgroup" class="control" data-type="horizontal" data-mini="true">
+      <a href="#" data-role="button" data-icon="bullets" data-iconpos="notext" style="float:right; z-index:1;" onclick=""></a>
+      <input type="text" class="eccb" data-mini="true" value="Sample text" />
+    </div>    
   </div>
   
 

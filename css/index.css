@@ -28,6 +28,15 @@
   margin: 0;
 }
 
+.ui-icon-library:after {
+	background-image: url(images/icons-png/library-white.png);
+}
+.ui-alt-icon.ui-icon-library:after,
+.ui-alt-icon .ui-icon-library:after {
+	background-image: url(images/icons-png/library-black.png);
+}
+
+
 @media only screen and (orientation: landscape)
 {
   img.horizontal {max-height:100%;}
