@@ -29,11 +29,11 @@
 }
 
 .ui-icon-library:after {
-	background-image: url(images/icons-png/library-white.png);
+	background-image: url(../images/icons-png/library-white.png);
 }
 .ui-alt-icon.ui-icon-library:after,
 .ui-alt-icon .ui-icon-library:after {
-	background-image: url(images/icons-png/library-black.png);
+	background-image: url(../images/icons-png/library-black.png);
 }
 
 
@@ -100,6 +100,9 @@
   padding-right:0.2em;
   padding-left:0.2em;
 }
+
+td {padding: 0;}
+div#header td .ui-btn {margin-top: 0; margin-bottom: 0;}
 
 .controlgroup-textinput
 {

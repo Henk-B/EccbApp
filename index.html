@@ -135,14 +135,18 @@
 
 <div data-role="header" id="header" style="overflow:hidden;" class="ui-page-theme-a" data-position="fixed" data-tap-toggle="false">
   <h1 id="title">Electronic Copyboard</h1>
-  <div data-role="controlgroup" class="control ui-btn-right" data-type="horizontal" data-mini="true">
-    <a id="connectIcon" href="#bluetooth" data-role="button" data-icon="check" data-iconpos="notext" class="ui-state-disabled">Bluetooth</a>
-    <!--a href="#" data-role="button" data-icon="gear">Options</a-->
-  </div>
-  <div data-role="controlgroup" class="control ui-btn-left" data-type="horizontal" data-mini="true">
-    <a href="#" class="prev" data-role="button" data-icon="arrow-l" data-iconpos="notext" data-theme="d">Previous</a>
-    <a href="#" class="next" data-role="button" data-icon="arrow-r" data-iconpos="notext" data-theme="d">Next</a>
-  </div>
+  
+  <table class="control ui-btn-left"><tr><td>
+    <a id="LocalOpen" href="#" class="ui-icon-library ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline">Load from local</a>
+    <a id="LocalSave" href="#" class="ui-icon-heart ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline ui-state-disabled">Save local</a>
+  </td></tr></table>
+
+  <table class="control ui-btn-right"><tr><td>
+    <a id="DisplaySave" href="#" class="ui-icon-check ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline ui-state-disabled">Save to display</a>
+    <a id="DisplayConnect" href="#" class="ui-icon-recycle ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline">Connect to display</a>
+    <a id="SysInfo" href="#" class="ui-icon-info ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline">System info</a>
+  </td></tr></table>
+
 </div><!-- /header -->
 
 
@@ -209,78 +213,47 @@
   screentext div input {float:left;}
   screentext div a {float:right;}
 </style>
-<div data-role="page" id="content" data-title="CONTENT" data-prev="#bluetooth" data-next="#calibration" class="ui-page-theme-a">
-    <div id="screenlist">
+<div data-role="page" id="content" data-title="CONTENT" data-prev="#bluetooth" data-next="#about" class="ui-page-theme-a">
 
-    <div id="screenControl" data-role="controlgroup" class="control" data-type="horizontal" data-mini="true">
-      <a id="browsePrv" href="#" data-role="button" data-icon="carat-l" data-iconpos="notext" class="ui-state-disabled">Previous</a>
-      <input id="screenIndex" type="number" data-inline="true" data-mini="true" readonly="readonly" value="#1">
-      <input id="screenName" type="button" data-inline="true" data-mini="true" value="Screen1">
-      <a id="screenMove" href="#" data-role="button" data-icon="library" data-iconpos="notext" class="ui-state-disabled">Move</a>
-      <a id="screenCfg" href="#" data-role="button" data-icon="bullets" data-iconpos="notext" class="ui-state-disabled">Config</a>
-      <a id="screenRefresh" href="#" data-role="button" data-icon="eye" data-iconpos="notext" class="ui-state-disabled">Refresh</a>
-      <a id="screenUndo" href="#" data-role="button" data-icon="recycle" data-iconpos="notext" class="ui-state-disabled">Undo</a>
-      <a id="screenSaveAll" href="#" data-role="button" data-icon="check" data-iconpos="notext" class="ui-state-disabled">Save all</a>
-      <a id="browseFwd" href="#" data-role="button" data-icon="carat-r" data-iconpos="notext" class="ui-state-disabled">Next</a>
-    </div>
+  <table style="white-space:nowrap;"><tr>
+    <td style="text-align:left;"><a id="browsePrv" href="#" class="ui-icon-carat-l ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" style="margin-left:8px;">Previous</a>
+      <input id="screenIndex" type="button" data-inline="true" data-mini="true" value="1/6"></td>
+    <td style="text-align:center;"><input id="screenName" type="text" data-inline="true" data-mini="true" value="Screen1"></td>
+    <td style="text-align:right;"><a id="screenCfg" href="#"  class="ui-icon-clock ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="ScreenConfigEdit();">Config</a>
+      <a id="screenRefresh" href="#"  class="ui-icon-eye ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline">Refresh</a>
+      <a id="screenUndo" href="#"  class="ui-icon-back ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline">Undo</a>
+      <a id="browseFwd" href="#" class="ui-icon-carat-r ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline">Next</a></td>
+  </tr></table>
 
-      <!--a href="#" class="inc" data-role="button" data-icon="plus" data-iconpos="notext" data-theme="a" style="float:right; z-index:1;" onclick="return ChangeSpring('#gain-front', true);">Increase</a>
-      <div style="white-space: nowrap;">
-        <input type="button" data-inline="true" data-mini="true" value="Screen1">
-        <input type="button" data-inline="true" data-mini="true" value="Screen2">
-        <input type="button" data-inline="true" data-mini="true" value="Screen3">
-      </div-->
-
-
-    <div id="screenparams" class="ui-body ui-corner-all" onclick="ScreenParamsEdit();">
-    text
-    </div>
-
-    <div id="screenconfig" class="ui-body ui-corner-all" onclick="ScreenParamsExit();" style="display:none;">
+  <div id="screenconfig" class="ui-body ui-corner-all" onclick="ScreenConfigEdit();" style="display:none;">
     editmode
-    </div>
-  
-  <div id="screentext">
-    <div id="line1" data-role="controlgroup" class="control" data-type="horizontal" data-mini="true">
-      <a href="#" data-role="button" data-icon="bullets" data-iconpos="notext" style="float:right; z-index:1;" onclick=""></a>
-      <input type="text" class="eccb" data-mini="true" value="Sample text" />
-    </div>
-    <div id="line2" data-role="controlgroup" class="control" data-type="horizontal" data-mini="true">
-      <a href="#" data-role="button" data-icon="bullets" data-iconpos="notext" style="float:right; z-index:1;" onclick=""></a>
-      <input type="text" class="eccb" data-mini="true" value="Sample text" />
-    </div>
-    <div id="line3" data-role="controlgroup" class="control" data-type="horizontal" data-mini="true">
-      <a href="#" data-role="button" data-icon="bullets" data-iconpos="notext" style="float:right; z-index:1;" onclick=""></a>
-      <input type="text" class="eccb" data-mini="true" value="Sample text" />
-    </div>
-    <div id="line4" data-role="controlgroup" class="control" data-type="horizontal" data-mini="true">
-      <a href="#" data-role="button" data-icon="bullets" data-iconpos="notext" style="float:right; z-index:1;" onclick=""></a>
-      <input type="text" class="eccb" data-mini="true" value="Sample text" />
-    </div>
-    <div id="line5" data-role="controlgroup" class="control" data-type="horizontal" data-mini="true">
-      <a href="#" data-role="button" data-icon="bullets" data-iconpos="notext" style="float:right; z-index:1;" onclick=""></a>
-      <input type="text" class="eccb" data-mini="true" value="Sample text" />
-    </div>    
   </div>
   
+  <table id="screentext" style="text-align:center;">
+    <tr id="line1"><td><input type="text" class="eccb" data-mini="true" value="Sample text" /></td><td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick=""></a></td></tr>
+    <tr id="line2"><td><input type="text" class="eccb" data-mini="true" value="Sample text" /></td><td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick=""></a></td></tr>
+    <tr id="line3"><td><input type="text" class="eccb" data-mini="true" value="Sample text" /></td><td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick=""></a></td></tr>
+    <tr id="line4"><td><input type="text" class="eccb" data-mini="true" value="Sample text" /></td><td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick=""></a></td></tr>
+    <tr id="line5"><td><input type="text" class="eccb" data-mini="true" value="Sample text" /></td><td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick=""></a></td></tr>
+  </tr></table>
 
   <script>
-      ScreenParamsEdit = function()
+    ScreenConfigEdit = function()
+    {
+      if($('#screenconfig').css('display') == 'none')
       {
         // Hide screen params and screen text, show screenconfig
-        $('#screenparams').css('display', 'none');
         $('#screentext').css('display', 'none');
         $('#screenconfig').css('display', '');
       }
-
-      ScreenParamsExit = function()
+      else
       {
         // Show screen params and screen text, hide screenconfig
         $('#screenconfig').css('display', 'none');
-        $('#screenparams').css('display', '');
         $('#screentext').css('display', '');
       }
-      
+    }
+
     $(document).ready(function()
     {
       
@@ -399,7 +372,7 @@
 </div>
 
 
-<div data-role="page" id="bluetooth" data-title="BLUETOOTH" data-next="#content" class="ui-page-theme-b">
+<div data-role="page" id="bluetooth" data-title="BLUETOOTH" data-next="#content" class="ui-page-theme-a">
   <fieldset data-role="controlgroup">
     <label for="deviceList">Device:</label>
     <select name="deviceList "id="deviceList">
@@ -489,652 +462,7 @@
   </script></div>
 
 
-<div data-role="page" id="calibration" data-title="SETTINGS&AMP;CALIBRATION" data-prev="#content" data-next="#values" class="ui-page-theme-b">
-  <form>
-    <fieldset data-role="collapsible">
-      <legend>Suspension configuration...</legend>
-
-      <label for"front-susp">Front axle:</label>
-      <select name="front-susp" id="front-susp">
-        <option value="0" selected disabled>...</option>
-        <option value="1">Wishbone</option>
-        <option value="2">Leafspring</option>
-      </select>
-
-      <label for"rear-susp">Rear axle:</label>
-      <select name="rear-susp" id="rear-susp">
-        <option value="0" selected>Leafspring</option>
-        <option value="2">Trailing arm</option>
-        <!--option value="2">Wishbone</option-->
-      </select>
-
-    </fieldset>
-
-    <fieldset data-role="collapsible">
-      <legend>System Settings...</legend>
-
-      <!--label for"door-level">Door switch signal level:</label>
-      <select name="door-level" id="door-level" onchange="app.sendDataRaw('$POL=' + $('option:selected',this).val());">
-        <option value="0" selected>Negative (ground) contact...</option>
-        <option value="1">Positive contact</option>
-      </select-->
-
-      <label for"buzzer-mode">Buzzer mode:</label>
-      <select name="buzzer-mode" id="buzzer-mode" onchange="app.sendDataRaw('$BUZ=' + $('option:selected',this).val() * $('#buzzer-time').val() );">
-        <option value="1" selected>Always beep on overweight</option>
-        <option value="-1">Beep max once while door open</option>
-        <option value="0">Beep disabled</option>
-      </select>
-
-      <label for"buzzer-time">Buzzer duration:</label>
-      <input type="range" name="buzzer-time" id="buzzer-time" data-highlight="true" min="0" max="15" value="5" onchange="app.sendDataRaw('$BUZ=' + $(this).val() * $('#buzzer-mode option:selected').val() );" />
-
-    </fieldset>
-
-    <fieldset data-role="collapsible">
-      <legend>Reference Weight...</legend>
-
-      <p>For best accuracy, the reference weight should be roughly halfway between rear and front axle.</p>
-      <input type="hidden" value="0" name="dist-rear" id="dist-rear" />
-
-      <label for="dist-front">Wheel base:</label>
-      <input type="number" value="350" name="dist-front" id="dist-front" />
-
-      <label for="dist-ref">Distance from rear-axle to middle of reference weight:</label>
-      <input type="number" value="150" name="dist-ref" id="dist-ref" />
-
-      <label for"reference-slider">Reference weight (kg)</label>
-      <input type="range" name="reference-slider" id="reference-slider" data-highlight="true" min="0" max="1000" value="500" step="1"/>
-
-    </fieldset>
-
-    <input type="button" id="calibrateZero" value="Calibrate zero load" onclick="app.sendDataRaw('$CAL=1,0,' + (parseInt($('#front-susp').val()) + parseInt($('#rear-susp').val())) + ',' + 0 + ',' + parseInt($('#dist-ref').val()) + ',' + parseInt($('#dist-front').val()) + ',' + parseInt($('#reference-slider').val()));"/>
-    <input type="button" id="calibrateReference" value="Calibrate reference load" class="ui-state-disabled" onclick="app.sendDataRaw('$CAL=2');"/>
-
-    <div data-role="collapsible">
-      <legend>Spring constants...</legend>
-      <script type="text/javascript">
-        ChangeSpring = function(varx, dir)
-        {
-          var val = $(varx).val();
-          if(val !== "") 
-          {
-            val = parseInt(val);
-            if(dir) val += Math.round(val / 100) || 1;
-            else val -= Math.round(val / 100) || 1;
-            $(varx).val(val);
-          }
-          return false;
-        }
-      </script>
-
-      <label for="gain-front">Front sensors:</label>
-      <div data-role="controlgroup" data-type="horizontal">
-        <a href="#" class="inc" data-role="button" data-icon="carat-u" data-iconpos="notext" data-theme="d" style="float:right;" onclick="return ChangeSpring('#gain-front', true);">Increase</a>
-        <a href="#" class="dec" data-role="button" data-icon="carat-d" data-iconpos="notext" data-theme="d" style="float:right;" onclick="return ChangeSpring('#gain-front', false);">Decrease</a>
-        <input type="number" name="gain-front" id="gain-front" data-wrapper-class="controlgroup-textinput ui-btn" />
-      </div>
-        
-      <label for="gain-rear">Rear sensors:</label>
-      <div data-role="controlgroup" data-type="horizontal">
-        <a href="#" class="inc" data-role="button" data-icon="carat-u" data-iconpos="notext" data-theme="d" style="float:right;" onclick="return ChangeSpring('#gain-rear', true);">Increase</a>
-        <a href="#" class="dec" data-role="button" data-icon="carat-d" data-iconpos="notext" data-theme="d" style="float:right;" onclick="return ChangeSpring('#gain-rear', false);">Decrease</a>
-        <input type="number" name="gain-rear" id="gain-rear" data-wrapper-class="controlgroup-textinput ui-btn" />
-      </div>
-        
-      <input type="button" id="calibrateConstants" value="Set spring constants" class="ui-state-disabled" onclick="app.sendDataRaw('$CAL=3,' + parseInt($('#gain-front').val()) + ',' + parseInt($('#gain-rear').val()));"/>
-        
-    </div>
-    
-    <label for="limit-weight">Limit Weight (kg):</label>
-    <input type="number" value="500" name="limit-weight" id="limit-weight" onchange="app.sendDataRaw('$MAX=' + $(this).val());" />
-
-    <label for="vehicle-weight">Vehicle empty weight (kg):</label>
-    <input type="number" value="0" name="vehicle-weight" id="vehicle-weight" onchange="app.sendDataRaw('$CAR=' + $(this).val());" />
-
-  </form>
-
-  <div data-role="footer" data-position="fixed" data-tap-toggle="false">
-    <div class="statusMessage">&nbsp;</div>
-  </div>
-
-  <script type="text/javascript">
-    pollCalibrationTimer = "";
-    prevRearDist = 0;
-    prevRefDist = 0;
-    prevFrontDist = 0;
-    prevRearGain = 0;
-    prevFrontGain = 0;
-
-    calcRatio = function(front, rear, ref)
-    {
-      window.localStorage.setItem("reference_front", front);
-      window.localStorage.setItem("reference_rear", rear);
-      window.localStorage.setItem("reference_ref", ref);
-    }
-
-    changeAxisSlider = function()
-    {
-      var axis = [];
-
-      axis[0] = $('#dist-rear-slider').val();
-      axis[1] = $('#dist-front-slider').val();
-
-      axis[2] = $('#dist-rear-slider2').val();
-      axis[3] = $('#dist-ref-slider2').val();
-
-      if(axis[0] != axis[2])
-      {
-        $('#dist-rear-slider2').val(axis[0]);
-        $('#dist-ref-slider').rangeslider('refresh');
-      }
-
-      if(axis[1] < axis[3])
-      {
-        $('#dist-ref-slider2').val(axis[1]);
-        $('#dist-ref-slider').rangeslider('refresh');
-      }
-
-      calcRatio(axis[1], axis[0], axis[3]);
-    }
-
-    changeAxisValue = function()
-    {
-      var axis = [];
-
-      axis[0] = $('#dist-rear').val();
-      axis[1] = $('#dist-front').val();
-      axis[3] = $('#dist-ref').val();
-
-      calcRatio(axis[1], axis[0], axis[3]);
-    }
-
-    changeRefSlider = function()
-    {
-      var axis = [];
-
-      axis[0] = $('#dist-rear-slider').val();
-      axis[1] = $('#dist-front-slider').val();
-
-      axis[2] = $('#dist-rear-slider2').val();
-      axis[3] = $('#dist-ref-slider2').val();
-
-      if(axis[0] != axis[2])
-      {
-        $('#dist-rear-slider2').val(axis[0]);
-        $('#dist-ref-slider').rangeslider('refresh');
-      }
-
-      if(axis[1] < axis[3])
-      {
-        $('#dist-ref-slider2').val(axis[1]);
-        $('#dist-ref-slider').rangeslider('refresh');
-      }
-
-      calcRatio(axis[1], axis[0], axis[3]);
-    }
-
-    changeRefValue = function()
-    {
-      var axis = [];
-
-      axis[0] = $('#dist-rear').val();
-      axis[1] = $('#dist-front').val();
-      axis[3] = $('#dist-ref').val();
-
-      calcRatio(axis[1], axis[0], axis[3]);
-    }
-
-    changeReferenceWeight = function()
-    {
-    }
-
-    $(document).ready(function()
-    {
-      $('#dist-rear').on("change", changeAxisValue);
-      $('#dist-ref').on("change", changeRefValue);
-      $('#dist-front').on("change", changeAxisValue);
-
-      $(document).on("pagecontainerchange", function( event, ui )
-      {
-        if($("body").pagecontainer("getActivePage").attr('id') == "calibration")
-        {
-          var axis = [];
-          axis[1] = window.localStorage.getItem("reference_front");
-          axis[0] = window.localStorage.getItem("reference_rear");
-          axis[3] = window.localStorage.getItem("reference_ref");
-
-          if(axis[1] == 0) axis[1] = 750;
-          if(axis[3] == 0) axis[3] = 500;
-          axis[0] = 0;
-
-          $('#dist-front').val(axis[1]);
-          $('#dist-rear').val(axis[0]);
-          $('#dist-ref').val(axis[3]);
-
-          calcRatio(axis[1], axis[0], axis[3]);
-
-          $('#gain-front').val(window.localStorage.getItem("gain_front"));
-          $('#gain-rear').val(window.localStorage.getItem("gain_rear"));
-          
-          var pollCalibration = function()
-          {
-            //console.log("pollstate " + pollState);
-            switch(pollState)
-            {
-              case 1:
-                app.sendDataRaw("$VER?");
-                break
-
-              case 2:
-                app.sendDataRaw("$CAR?");
-                break
-
-              case 3:
-                app.sendDataRaw("$POL?");
-                break
-
-              case 4:
-                app.sendDataRaw("$BUZ?");
-                break;
-
-              case 5:
-                app.sendDataRaw("$MAX?");
-                break;
-
-              default:
-                app.sendDataRaw("$CAL?");
-                return; // No restart of timer!
-            }
-            pollState++;
-            pollCalibrationTimer = window.setTimeout(pollCalibration, 100);
-          };
-
-          pollState = 1;
-          pollCalibrationTimer = window.setTimeout(pollCalibration, 100);
-        }
-        else
-        {
-          window.clearTimeout(pollCalibrationTimer);
-        }
-      });
-
-      calibrationPol = function(args)
-      {
-        if(args === undefined)
-          return;
-
-        // Set doorswitch polarity selector to actual value
-        $('#door-level').val(args[0]).selectmenu('refresh',true);
-      }
-
-      calibrationBuz = function(args)
-      {
-        if(args === undefined)
-          return;
-
-        var mode = parseInt(args);
-        if(mode < 0) mode = -1;
-        if(mode > 0) mode = 1;
-        $('#buzzer-mode').val(mode).selectmenu('refresh',true);
-
-        // Set buzzer duration
-        $('#buzzer-time').val(Math.abs(parseInt(args[0]))).slider('refresh',true);
-      }
-
-      calibrationMax = function(args)
-      {
-        if(args === undefined)
-          return;
-
-        // Set maximum weight slider to actual value
-        $('#limit-weight').val(args[0]);
-      }
-
-      calibrationCar = function(args)
-      {
-        if(args === undefined)
-          return;
-
-        // Set vehicle weight slider to actual value
-        $('#vehicle-weight').val(args[0]);
-      }
-
-      calibrationStatus = function(args)
-      {
-        if(args === undefined)
-        {
-          var args = [0,0,500,0,100,250,400];
-          app.setStatus("Cal status: unknown...");
-        }
-        else
-        {
-          switch(parseInt(args[3], 16))
-          {
-            case 1:  app.setStatus("Cal zero OK"); break;
-            case 15: app.setStatus("Calibration OK"); break;
-            default: app.setStatus("Cal unknown: " + args); break;
-          }
-        }
-
-        // Cal state report : @CAL=v0,v1,v2,v3,v4...
-        // v0 = alignment of CPU module
-        // v1 = alignment of front axis
-        // v2 = reference weight
-        // v3 = calibration status.
-        // v4 = rear axle distance
-        // v5 = reference distance
-        // v6 = front axle distance
-        // v7 = gain front suspension
-        // v8 = gain read suspension
-
-        if(parseInt(args[3], 16) >= 1)
-        {
-          app.enable(calibrateReference);
-          app.enable(calibrateConstants);
-        }
-        else
-        {
-          app.disable(calibrateReference);
-          app.disable(calibrateConstants);
-        }
-
-        // Alignment of CPU mounting
-        $('#cpu-mount').val(args[0]).selectmenu('refresh',true);
-
-        // Alignment of front suspension
-        if(args[1] > 2)
-        {
-          $('#front-susp').val(args[1] - 2).selectmenu('refresh',true);
-          $('#rear-susp').val(2).selectmenu('refresh',true);
-        }
-        else
-        {
-          $('#front-susp').val(args[1]).selectmenu('refresh',true);
-          $('#rear-susp').val(0).selectmenu('refresh',true);
-        }
-
-        if(args[2] == 0)
-          app.sendDataRaw('$CAL=3,500');
-
-        $('#reference-slider').val(args[2]);
-        $('#reference-slider').slider('refresh');
-
-        var dist = parseFloat(args[4]);
-        if((dist > 0) && (dist != prevRearDist))
-        {
-          $('#dist-rear').val(dist);
-          prevRearDist = dist;
-        }
-        dist = parseFloat(args[5]);
-        if((dist > 0) && (dist != prevRefDist))
-        {
-          $('#dist-ref').val(dist);
-          prevRefDist = dist;
-        }
-        dist = parseFloat(args[6]);
-        if((dist > 0) && (dist != prevFrontDist))
-        {
-          $('#dist-front').val(dist);
-          prevFrontDist = dist;
-        }
-        if(args[7] === undefined)
-        {
-          $('#gain-front').val("");
-          $('#gain-rear').val("");
-        }
-        else
-        {
-          dist = parseFloat(args[7]);
-          if((dist != 0) && (dist != $('#gain-front').val()))
-          {
-            $('#gain-front').val(dist);
-          }
-          dist = parseFloat(args[8]);
-          if((dist != 0) && (dist != $('#gain-rear').val()))
-          {
-            $('#gain-rear').val(dist);
-          }
-        }
-      }
-
-      calibrationConfig = function(args)
-      {
-      }
-
-      // subscribe to @CAL, @CFG, @MAX
-
-    });
-  </script>
-</div>
-
-
-<div data-role="page" id="values" data-title="DIAGNOSTICS" data-prev="#calibration" data-next="#tomtom" class="ui-page-theme-b">
-  <table data-role="table" id="debug-data" data-mode="reflow2" class="ui-responsive">
-    <thead><tr>
-      <th>Weight</th><th class="weight">---</th><th class="ind_green"><b>&check;</b></th>
-      <th class="ind_yellow"><b>&excl;</b></th><th class="ind_red"><b>&cross;</b></th>
-    </tr><tr>
-      <th>Node</th><th>Vect</th><th>Gain</th><th>Zero</th><th>Angle</th><th>Weight</th>
-    </tr></thead>
-    <tbody>
-      <!--tr id="node1"><th>Center</th><td>x</td><td>x</td><td>x</td><td>0</td><td>-</td></tr-->
-      <tr id="node2"><th>Front<br>Right</th><td>x</td><td>x</td><td>x</td><td>0</td><td>0</td></tr>
-      <tr id="node3"><th>Front<br>Left</th><td>x</td><td>x</td><td>x</td><td>0</td><td>0</td></tr>
-      <tr id="node4"><th>Rear<br>Right</th><td>x</td><td>x</td><td>x</td><td>0</td><td>0</td></tr>
-      <tr id="node5"><th>Rear<br>Left</th><td>x</td><td>x</td><td>x</td><td>0</td><td>0</td></tr>
-    </tbody>
-  </table>
-
-  <fieldset data-role="controlgroup">
-    <div class="ui-grid-b">
-      <div class="ui-block-a"><input type="button" value="$CAL?" onclick="app.sendDataRaw(this.value);"/></div>
-      <div class="ui-block-b"><input type="button" value="$CFG?" onclick="pollState=0; pollCfg();"/></div>
-      <div class="ui-block-c"><input type="button" value="$ANG?" onclick="app.sendDataRaw(this.value);"/></div>
-    </div>
-  </fieldset>
-
-  <div data-role="footer" data-position="fixed" data-tap-toggle="false">
-    <textarea id="debugmessages" rows="8" readonly="readonly" style="overflow-y:auto;"></textarea>
-    <div class="statusMessage">&nbsp;</div>
-  </div>
-
-  <script type="text/javascript">
-    $(document).ready(function()
-    {
-      $(document).on("pagecontainerchange", function( event, ui )
-      {
-        if($("body").pagecontainer("getActivePage").attr('id') == "values")
-        {
-          var pollCfg = function()
-          {
-            //console.log("pollstate " + pollState);
-            if(pollState <= 5)
-            {
-              app.sendDataRaw("$CFG?" + pollState);
-              pollState++;
-              pollTimer = window.setTimeout(pollCfg, 100);
-            }
-            else
-            {
-              app.sendDataRaw("$ANG?");
-              pollTimer = window.setTimeout(pollCfg, 500);
-            }
-          };
-
-          pollState = 1;
-          pollTimer = window.setTimeout(pollCfg, 100);
-          debugmessages.scrollTop = debugmessages.scrollHeight;
-        }
-        else
-        {
-          window.clearTimeout(pollTimer);
-        }
-      });
-    });
-
-    valuesConfig = function(args)
-    {
-      if(args === undefined)
-      {
-        //valuesConfig([1,'-','','0','0','-']);
-        valuesConfig([2,'-','','0','0','0']);
-        valuesConfig([3,'-','','0','0','0']);
-        valuesConfig([4,'-','','0','0','0']);
-        valuesConfig([5,'-','','0','0','0']);
-        return;
-      }
-
-      var cols = $("#node" + args[0]).find('td').get();
-      if(cols)
-      {
-        cols[0].innerHTML = args[1];
-        cols[1].innerHTML = args[2] * args[3];
-        cols[2].innerHTML = args[4];
-        cols[3].innerHTML = "?";
-      }
-    }
-
-    valuesAngles = function(args)
-    {
-      if(args === undefined)
-      {
-        var args = [0,0,0,0,0,0,0,0,0];
-      }
-
-      //$("#node1").find('td').get()[3].innerHTML = args[0] / 100;
-      $("#node2").find('td').get()[3].innerHTML = args[1] / 100;
-      $("#node3").find('td').get()[3].innerHTML = args[2] / 100;
-      $("#node4").find('td').get()[3].innerHTML = args[3] / 100;
-      $("#node5").find('td').get()[3].innerHTML = args[4] / 100;
-
-      $("#node2").find('td').get()[4].innerHTML = args[5] / 10;
-      $("#node3").find('td').get()[4].innerHTML = args[6] / 10;
-      $("#node4").find('td').get()[4].innerHTML = args[7] / 10;
-      $("#node5").find('td').get()[4].innerHTML = args[8] / 10;
-    }
-  </script>
-</div>
-
-
-<div data-role="page" id="tomtom" data-title="TOMTOM" data-prev="#values" data-next="#about" class="ui-page-theme-b">
-  <form>
-    <div style="text-align:center;"><br>
-      <img src="images\ttt-wf-logo-white-medium-2x.png" align="center" style="max-height:25%; max-width:80%;"/>
-      <br><br>
-    </div>
-
-    <div data-role="controlgroup">
-      <label for"btdevices">Bluetooth devices in range:</label>
-      <select name="btdevices" id="btdevices" size="4" onchange="app.enable(sendBluetooth);">
-      </select>
-    </div>
-
-    <input type="button" id="sendBluetooth" value="Send bluetooth ID" class="ui-state-disabled" onclick="app.sendDataRaw('$TOM=' + $('#btdevices').val());"/>
-
-    <div data-role="footer" data-position="fixed" data-tap-toggle="false">
-      <div class="statusMessage">&nbsp;</div>
-    </div>
-  </form>
-  
-  <script type="text/javascript">
-    $(document).ready(function()
-    {
-      $(document).on("pagecontainerchange", function( event, ui )
-      {
-        if($("body").pagecontainer("getActivePage").attr('id') == "tomtom")
-        {
-          btdevices.innerHTML = "";
-          app.disable(sendBluetooth);
-
-          var btFail = function()
-          {
-            app.setStatus("Bluetooth failure...");
-          };
-          
-          var bluetoothScan = function()
-          {
-            //app.setStatus("Scanning");
-            //console.log("bluetoothScan");
-    
-            <!-- https://www.npmjs.com/package/cordova-plugin-bluetooth-serial -->
-            bluetoothSerial.list(btResults, btFail);
-            bluetoothSerial.setDeviceDiscoveredListener(btResult);
-            bluetoothSerial.discoverUnpaired(btResults, btFail);
-
-            btScanTimer = window.setTimeout(bluetoothScan, 1000);
-          };
-          
-          var btResult = function(device)
-          {
-            var option = $('#btdevices option[value="' + device.address + '"]');
-            if(option.length <= 0)
-            {
-              app.setStatus("Add " + device.name + " (" + device.address + " " + device.class + ")");
-              option = document.createElement('option');
-              option.value = device.address;
-              option.innerHTML = device.name + " (" + device.address + ")";
-              
-              if(device.class == 768)
-              {
-                btdevices.insertBefore(option, btdevices.firstChild);
-                if($('#btdevices').val() === null)
-                  $('#btdevices').val(option.value);
-              }
-              else
-                btdevices.appendChild(option);
-                
-              if($('#btdevices').selectmenu('instance') !== undefined)
-                $('#btdevices').selectmenu('refresh');
-            }
-          };
-          
-          var btResults = function(devices)
-          {
-            devices.forEach(function(device)
-            {
-              btResult(device);
-            });
-          };
-
-          btScanTimer = window.setTimeout(bluetoothScan, 250);
-        }
-        else
-        {
-          bluetoothSerial.clearDeviceDiscoveredListener();
-          window.clearTimeout(btScanTimer);
-        }
-      });
-    });
-          var btResult2 = function(device)
-          {
-            var option = $('#btdevices option[value="' + device.address + '"]');
-            if(option.length <= 0)
-            {
-              app.setStatus("Add " + device.name + " (" + device.address + " " + device.class + ")");
-              option = document.createElement('option');
-              option.value = device.address;
-              option.innerHTML = device.name + " (" + device.address + ")";
-              
-              if(device.class == 768)
-              {
-                btdevices.insertBefore(option, btdevices.firstChild);
-                if($('#btdevices').val() === null)
-                  $('#btdevices').val(option.value);
-              }
-              else
-                btdevices.appendChild(option);
-                
-              if($('#btdevices').selectmenu('instance') !== undefined)
-                $('#btdevices').selectmenu('refresh');
-            }
-          };
-    
-  </script>
-</div>
-
-
-<div data-role="page" id="about" data-title="ABOUT" data-prev="#tomtom" data-next="#splash" class="ui-page-theme-b">
+<div data-role="page" id="about" data-title="ABOUT" data-prev="#content" data-next="#splash" class="ui-page-theme-a">
   <div id="logo" class="dezaag_logo"><p>Load Monitor</p></div>
   <div>
     <p>LoadMonitor B.V.<br>Postbus 7239<br>3280AA Numansdorp<br>The Netherlands</p>
@@ -1228,7 +556,6 @@
   </script>
 
   <div data-role="footer" data-position="fixed" data-tap-toggle="false">
-    <!--img class="vertical" src="images\Zaag_GR_Animatie.gif"/-->
     <div class="statusMessage">&nbsp;</div>
   </div>
 </div>
