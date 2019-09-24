@@ -2,7 +2,7 @@
 <widget id="nl.whitebream.eccb" 
     xmlns="http://www.w3.org/ns/widgets"
     xmlns:gap="http://phonegap.com/ns/1.0"
-    version="0.1.0">
+    version="0.1.1">
 
     <name>Electronic Copyboard</name>
     
@@ -10,7 +10,7 @@
         Content editing tool for ECCB display system.
     </description>
     
-    <author email="eccb@whitebream.nl" href="https://whitebream.nl/eccb">
+    <author email="support@whitebream.com" href="https://whitebream.nl/eccb">
         Henk Bliek, White Bream
     </author>
     
@@ -23,7 +23,7 @@
 
     <feature name="http://api.phonegap.com/1.0/device" />
 	<preference name='phonegap-version' value='cli-8.1.1' />
-    <preference name="orientation" value="default" />
+	<preference name="orientation" value="landscape" />
     <preference name="target-device" value="universal" />
     <preference name="fullscreen" value="false" />
     <preference name="KeyboardShrinksView" value="true" />
