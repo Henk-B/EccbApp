@@ -233,7 +233,10 @@
         });
       }
       catch(e)
-      {}
+      {
+        if(AppVersion !== undefined)
+          $('#versionapp').text(AppVersion.version);
+      }
     });
   </script>
 
