@@ -18,6 +18,8 @@
     {
       //$.mobile.defaultPageTransition = "slide";
       $.mobile.listview.prototype.options.headerTheme = "b";
+      // Prevent problems with the JQM popups
+      $.mobile.popup.prototype.options.history = false;
     });
 
     pollTimer = 0;
@@ -54,10 +56,10 @@
       prev = ui.toPage.jqmData("prev");
 
       console.log("pagecontainerchange, "+ prev + " <> " + next);
-      //if(next)
-      //  $(".control .next").removeClass("ui-disabled");
-      //else
-      //  $(".control .next").addClass("ui-disabled");
+      if(next)
+        $(".control .next").removeClass("ui-disabled");
+      else
+        $(".control .next").addClass("ui-disabled");
 
       if(prev)
         $(".control .prev").removeClass("ui-disabled");
@@ -137,15 +139,103 @@
   <h1 id="title">Electronic Copyboard</h1>
   
   <table class="control ui-btn-left"><tr><td>
-    <a id="LocalOpen" href="#" class="ui-icon-library ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline">Load from local</a>
-    <a id="LocalSave" href="#" class="ui-icon-heart ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline ui-state-disabled">Save local</a>
+    <a id="LocalOpen" href="#LocalOpenPopup" class="ui-icon-library ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" data-rel="popup">Load from local</a>
+    <a id="LocalSave" href="#LocalSavePopup" class="ui-icon-heart ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" data-rel="popup">Save local</a>
   </td></tr></table>
 
   <table class="control ui-btn-right"><tr><td>
     <a id="DisplaySave" href="#" class="ui-icon-check ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline ui-state-disabled">Save to display</a>
-    <a id="DisplayConnect" href="#" class="ui-icon-recycle ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline">Connect to display</a>
-    <a id="SysInfo" href="#" class="ui-icon-info ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline">System info</a>
+    <a id="DisplayConnect" href="#BluetoothConnectPopup" class="ui-icon-clock ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" data-rel="popup">Connect to display</a>
+    <a id="SysInfo" href="#SystemInfoPopup" class="ui-icon-info ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" data-rel="popup">System info</a>
   </td></tr></table>
+
+  <div data-role="popup" id="LocalSavePopup" data-theme="a" data-position-to="window" data-transition="pop" class="ui-corner-all">
+    <div role="main" class="ui-content">
+      <h3>Save display configuration</h3>
+      <p>TODO Set filename and dump data to local storage</p>
+      <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Cancel</a>
+      <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow" onclick="LocalSaveExec();">Done</a>
+    </div>
+  </div>
+  <script>
+    LocalSaveExec = function()
+    {
+      console.log('Saving');
+    }
+  </script>
+
+  <div data-role="popup" id="LocalOpenPopup" data-theme="a" data-position-to="window" data-transition="pop" class="ui-corner-all">
+    <div role="main" class="ui-content">
+      <h3>Load display configuration</h3>
+      <p>TODO List files available in local storage</p>
+      <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Cancel</a>
+      <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow" onclick="LocalOpenExec();">Done</a>
+    </div>
+  </div>
+  <script>
+    LocalOpenExec = function()
+    {
+      console.log('Opening');
+    }
+  </script>
+
+  <div data-role="popup" id="BluetoothConnectPopup" data-theme="a" data-position-to="window" data-transition="pop" class="ui-corner-all">
+    <div role="main" class="ui-content">
+      <h3>Bluetooth connect</h3>
+      <p>TODO Scan BLE devices in range</p>
+      <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" onclick="BluetoothConnectAbort();">Cancel</a>
+      <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow" onclick="BluetoothConnectExec();">Done</a>
+    </div>
+  </div>
+  <script>
+    $('#BluetoothConnectPopup').on('popupbeforeposition', function(event, ui)
+    {
+      console.log('BLE Scan');
+    });
+    BluetoothConnectAbort = function()
+    {
+      console.log('BluetoothConnectAbort');
+    }
+    BluetoothConnectExec = function()
+    {
+      console.log('BluetoothConnectExec');
+    }
+  </script>
+
+  <div data-role="popup" id="SystemInfoPopup" data-theme="a" data-position-to="window" data-transition="pop" class="ui-corner-all">
+    <a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>
+    <div role="main" class="ui-content">
+      <h3>System information</h3>
+      <p>Display configuration: <span>24 x 5 chars</span></p>
+      <p>Display controller</p>
+      <ul>
+        <li>hardware model: <span id='hardware'></span></li>
+        <li>serial no: <span id='serial'></span></li>
+        <li>FPGA version: <span id='fpgaware'></span></li>
+        <li>software version: <span id='firmware'></span></li>
+      </ul>
+      <p>App version: <span id='versionapp'>0</span></p>
+    </div>
+  </div>
+  <script>
+    $('#SystemInfoPopup').on('popupbeforeposition', function(event, ui)
+    {
+      $('#hardware').text('M077PL016A');
+      $('#serial').text('12345678');
+      $('#fpgaware').text('0.1');
+      $('#firmware').text('0.0.0.0 (1/1/2019)');
+      
+      try
+      {
+        cordova.getAppVersion.getVersionNumber(function(version)
+        {
+          $('#versionapp').text(version);
+        });
+      }
+      catch(e)
+      {}
+    });
+  </script>
 
 </div><!-- /header -->
 
@@ -209,130 +299,177 @@
 </div>
 
 <style>
-  input.eccb {font-size: 24px; font-family: monospace;}
-  screentext div input {float:left;}
-  screentext div a {float:right;}
+  input.eccb {font-size: 125% !important; font-family: monospace;}
 </style>
-<div data-role="page" id="content" data-title="CONTENT" data-prev="#bluetooth" data-next="#about" class="ui-page-theme-a">
+<div data-role="page" id="content" data-title="ECCB" data-prev="#bluetooth" data-next="#about" class="ui-page-theme-a">
 
   <table style="white-space:nowrap;"><tr>
-    <td style="text-align:left;"><a id="browsePrv" href="#" class="ui-icon-carat-l ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" style="margin-left:8px;">Previous</a>
-      <input id="screenIndex" type="button" data-inline="true" data-mini="true" value="1/6"></td>
+    <td style="text-align:left;">
+      <a id="browsePrv" href="#" class="ui-icon-carat-l ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="ScreenGoto(this);" style="margin-left:8px;">Previous</a>
+      <input id="screenIndex" type="button" data-inline="true" data-mini="true" value="1/6" onclick="$('#ScreenArrangePopup').popup('open');">
+    </td>
     <td style="text-align:center;"><input id="screenName" type="text" data-inline="true" data-mini="true" value="Screen1"></td>
-    <td style="text-align:right;"><a id="screenCfg" href="#"  class="ui-icon-clock ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="ScreenConfigEdit();">Config</a>
-      <a id="screenRefresh" href="#"  class="ui-icon-eye ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline">Refresh</a>
-      <a id="screenUndo" href="#"  class="ui-icon-back ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline">Undo</a>
-      <a id="browseFwd" href="#" class="ui-icon-carat-r ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline">Next</a></td>
+    <td style="text-align:right;">
+      <a id="screenCfg" href="#ScreenConfigPopup" class="ui-icon-clock ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" data-rel="popup" data-position-to="window" data-transition="pop">Config</a>
+      <a id="screenRefresh" href="#" class="ui-icon-eye ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="ScreenRefresh();">Refresh</a>
+      <a id="screenUndo" href="#" class="ui-icon-back ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="ScreenReadScreen();">Undo</a>
+      <a id="browseFwd" href="#" class="ui-icon-carat-r ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="ScreenGoto(this);">Next</a>
+    </td>
   </tr></table>
 
-  <div id="screenconfig" class="ui-body ui-corner-all" onclick="ScreenConfigEdit();" style="display:none;">
-    editmode
-  </div>
-  
-  <table id="screentext" style="text-align:center;">
-    <tr id="line1"><td><input type="text" class="eccb" data-mini="true" value="Sample text" /></td><td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick=""></a></td></tr>
-    <tr id="line2"><td><input type="text" class="eccb" data-mini="true" value="Sample text" /></td><td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick=""></a></td></tr>
-    <tr id="line3"><td><input type="text" class="eccb" data-mini="true" value="Sample text" /></td><td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick=""></a></td></tr>
-    <tr id="line4"><td><input type="text" class="eccb" data-mini="true" value="Sample text" /></td><td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick=""></a></td></tr>
-    <tr id="line5"><td><input type="text" class="eccb" data-mini="true" value="Sample text" /></td><td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick=""></a></td></tr>
+  <table id="screenText" style="text-align:center;">
+    <tr id="line1"><td><input type="text" class="eccb" data-mini="true" value="" /></td>
+      <td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="lineConfig(1);"></a></td></tr>
+    <tr id="line2"><td><input type="text" class="eccb" data-mini="true" value="" /></td>
+      <td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="lineConfig(2);"></a></td></tr>
+    <tr id="line3"><td><input type="text" class="eccb" data-mini="true" value="" /></td>
+      <td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="lineConfig(3);"></a></td></tr>
+    <tr id="line4"><td><input type="text" class="eccb" data-mini="true" value="" /></td>
+      <td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="lineConfig(4);"></a></td></tr>
+    <tr id="line5"><td><input type="text" class="eccb" data-mini="true" value="" /></td>
+      <td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="lineConfig(5);"></a></td></tr>
   </tr></table>
+
+  <div data-role="popup" id="ScreenConfigPopup" data-theme="a" data-transition="pop" data-position-to="window" class="ui-corner-all">
+    <div role="main" class="ui-content">
+      <h3>Parameters for this page</h3>
+      <p>TODO Set screen/page duration</p>
+      <p>TODO Set timetriggered screen/page activation</p>
+      <p>TODO Add GOTO mode to jump to non-sequential screen</p>
+      <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Cancel</a>
+      <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow" onclick="ScreenConfigExec();">Done</a>
+    </div>
+  </div>
+  <script>
+    ScreenConfigExec = function()
+    {
+      console.log('ScreenConfigExec');
+    }
+  </script>
+
+  <div data-role="popup" id="ScreenArrangePopup" data-theme="a" data-transition="pop" data-position-to="window" class="ui-corner-all">
+    <div role="main" class="ui-content">
+      <h3>Arrange page</h3>
+      <p>TODO Mechanism to rearrange screen to other position</p>
+      <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Cancel</a>
+      <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow" onclick="ScreenArrangeExec();">Done</a>
+    </div>
+  </div>
+  <script>
+    ScreenArrangeExec = function()
+    {
+      console.log('ScreenArrangeExec');
+    }
+  </script>
+
+  <div data-role="popup" id="LineConfigPopup" data-theme="a" data-transition="pop" data-position-to="window" class="ui-corner-all">
+    <div role="main" class="ui-content">
+      <h3>Parameters for text line <span id="no">N</span></h3>
+      <p>TODO Set left/center/right align</p>
+      <p>TODO Set bold text mode, set timestamp parse mode</p>
+      <p>TODO Set scroll mode left/right clear, ticker</p>
+      <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Cancel</a>
+      <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow" onclick="LineConfigExec();">Done</a>
+    </div>
+  </div>
+  <script>
+    LineConfigExec = function()
+    {
+      console.log('LineConfigExec');
+    }
+  </script>
+  <script>
+    lineConfig = function(no)
+    {
+      $('#lineConfig span#no').text(no);
+      $('#LineConfigPopup').popup('open');
+    }
+  </script>
 
   <script>
-    ScreenConfigEdit = function()
+    var vScreenIndex = 1;
+    
+    // Create array of demo screens 
+    var vScreens = new Array();
+    vScreens[0] = {'name':'Intro', 'duration':60, 'goto':0, 'lines':['intro text 1', 'intro text 2', 'intro text 3', 'intro text 4', 'intro text 5'], 'linecfg':[1, 3, 2, 3, 1]};
+    vScreens[1] = {'name':'Etulipa', 'duration':60, 'goto':0, 'lines':['E T U L I P A', 'presents', '', 'Electronic controlled', 'Copyboard'], 'linecfg':[128+3, 3, 3, 3, 3]};
+    vScreens[2] = {'name':'Page', 'duration':60, 'goto':0, 'lines':['', '', 'note that the first', 'line is preserved', 'from previous screen'], 'linecfg':[0, 1, 3, 3, 3]};
+    vScreens[3] = {'name':'Outro', 'duration':60, 'goto':0, 'lines':['outro text 1', 'outro text 2', 'outro text 3', 'outro text 4', 'outro text 5'], 'linecfg':[1, 2, 3, 2, 1]};
+
+    ScreenRefresh = function()
     {
-      if($('#screenconfig').css('display') == 'none')
+      // Send screen data to display and request play at t=0
+    }
+
+    ScreenReadScreen = function()
+    {
+      // Update screen number indicator and label
+      $('#screenIndex').val(vScreenIndex + "/" + vScreens.length).button('refresh');
+      $('#screenName').val(vScreens[vScreenIndex - 1].name);//.button('refresh');
+      
+      // Retrieve screen data from currently selected screen
+      for(i = 0; i < 5; i++)
       {
-        // Hide screen params and screen text, show screenconfig
-        $('#screentext').css('display', 'none');
-        $('#screenconfig').css('display', '');
+        var line = $('#screenText tr:nth-child(' + (i + 1) + ') input');
+        
+        if(vScreens[vScreenIndex - 1].linecfg[i] != 0)
+        {
+          line.val(vScreens[vScreenIndex - 1].lines[i]);
+          line.css('font-weight', vScreens[vScreenIndex - 1].linecfg[i] & 128 ? 'bold' : '');
+          
+          switch(vScreens[vScreenIndex - 1].linecfg[i] % 4)
+          {
+            case 2:   // Right align
+              $('#screenText tr:nth-child(' + (i + 1) + ') input').css('text-align', 'right');
+              break;
+            case 3:   // Center align
+              $('#screenText tr:nth-child(' + (i + 1) + ') input').css('text-align', 'center');
+              break;
+            default:
+              $('#screenText tr:nth-child(' + (i + 1) + ') input').css('text-align', 'left');
+              break;
+          }
+
+        }
+      }
+    }
+
+    ScreenGoto = function(_this)
+    {
+      if(_this.id == 'browsePrv')
+      {
+        // Select previous screen or ask to insert new screen
+        if(vScreenIndex > 1)
+          vScreenIndex--;
+      }
+      else if(_this.id == 'browseFwd')
+      {
+        // Select next screen or ask to add new screen
+        if(vScreenIndex < vScreens.length)
+          vScreenIndex++;
       }
       else
       {
-        // Show screen params and screen text, hide screenconfig
-        $('#screenconfig').css('display', 'none');
-        $('#screentext').css('display', '');
+        // Goto screen by reference index
+        vScreenIndex = _this;
       }
+      ScreenReadScreen();
     }
 
     $(document).ready(function()
     {
-      
       // Register onclick handler for screen parameters
-      screenparams.onclick = ScreenParamsEdit;
-      screenconfig.onclick = ScreenParamsExit;
-      
-      $.fn.textfill = function(options)
-      {
-        $(weight).parent().css('height', $(weight).parent().css('min-height'));
-       
-        var fontSize = options.maxFontPixels;
-        var ourText = $('#weightdisplay', this);
-        var maxHeight = $(weight).height();
-        var maxWidth = $(weight).width();
-        var textHeight = ourText.outerHeight();
-        var textWidth = ourText.outerWidth();
-
-        var tmp = ourText.html();
-        if(tmp.length < 6)
-        {
-          ourText.html('0000KG');
-          ourText.redraw();
-        }
-
-        ourText.css('font-size', 50);
-        ourText.css('marginTop', '');
-        ourText.css('display', 'none');
-
-        do
-        {
-          ourText.css('font-size', fontSize);
-          do
-          {
-            textHeight = ourText.outerHeight();
-          }
-          while(textHeight == 0);
-
-          textWidth = ourText.outerWidth();
-          fontSize -= fontSize / 50;
-        }
-        while((textHeight > maxHeight || textWidth > maxWidth) && (fontSize > 50));
-
-        //console.log(maxHeight + ", " + textHeight + " - " + maxWidth + ", " + textWidth);
-        if(maxHeight - textHeight > 0)
-        {
-          // adjust vertical position
-          ourText.css('marginTop', (maxHeight - textHeight) / 2);
-        }
-        //ourText.css('backgroundColor', 'red');
-
-        ourText.html(tmp);
-        ourText.css('display', 'inline-block');
-        return this;
-      }
-
-      $(window).on("orientationchange", function()
+    //  screenparams.onclick = ScreenParamsEdit;
+    //  screenconfig.onclick = ScreenParamsExit;
+    
+      $(document).on("pagecontainerchange", function(event, ui)
       {
         if($("body").pagecontainer("getActivePage").attr('id') == "content")
         {
-          $('#weightdisplay').css('font-size', 50);
-          $('#weightdisplay').css('marginTop', '');
-          $('#weightdisplay').css('display', 'none');
-
-          $("div#weight").textfill({ maxFontPixels: 500 });
-          //window.setTimeout(function(){$("div#weight").textfill({ maxFontPixels: 500 });}, 150);
+          vScreenIndex = 1;
+          ScreenReadScreen();
         }
       });
-
-      $(document).on("pagecontainerchange", function( event, ui )
-      {
-        if($("body").pagecontainer("getActivePage").attr('id') == "content")
-        {
-          $(header).toolbar("updatePagePadding");
-          $("div#weight").textfill({ maxFontPixels: 500 });
-          //window.setTimeout(function(){$("div#weight").textfill({ maxFontPixels: 500 });}, 150);
-        }
-      });
-
     });
 
     mainValue = function(args)
@@ -366,7 +503,7 @@
   <script type="text/javascript">
     $(document).ready(function()
     {
-      window.setInterval(function () {app.pollWeight()}, 1000);
+//      window.setInterval(function () {app.pollWeight()}, 1000);
     });
   </script>
 </div>
