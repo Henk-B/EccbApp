@@ -22,7 +22,8 @@
     <icon src="img/etulipa_CMYK.png" width="150" height="150" />
 
     <feature name="http://api.phonegap.com/1.0/device" />
-	<preference name='phonegap-version' value='cli-9.0.0' />
+	<preference name='phonegap-version' value='cli-8.1.1' />
+	<!--preference name='phonegap-version' value='cli-9.0.0' /-->
 	<!--preference name="orientation" value="landscape" /-->
     <preference name="target-device" value="universal" />
     <preference name="fullscreen" value="false" />
