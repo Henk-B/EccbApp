@@ -229,12 +229,13 @@
       {
         cordova.getAppVersion.getVersionNumber(function(version)
         {
-          $('#versionapp').text(version);
+          //$('#versionapp').text(version);
+          document.getElementById("versionapp").innerText = version;
         });
       }
       catch(e)
       {
-        if(AppVersion !== undefined)
+        if(typeof(AppVersion) != 'undefined')
           $('#versionapp').text(AppVersion.version);
       }
     });
