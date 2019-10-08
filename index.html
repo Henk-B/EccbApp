@@ -244,8 +244,13 @@
       //ble.startScan([EccbService], function(status)
       ble.startScan([], function(status)
       {
-        $('#ble-id').text(status.name);
-        vBleId = status.id;
+        var id = new Uint8Array(status.id);
+          $('#ble-id').text(status.id);
+        if((id[0] == 0x03) && (id[1] == 0x80) && (id[2] == 0xE1) && (id[3] == 0x00))
+        {
+          $('#ble-id').text(status.name);
+          vBleId = status.id;
+        }
       }, 
       BleError);
     });

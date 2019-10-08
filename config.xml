@@ -2,7 +2,7 @@
 <widget id="nl.whitebream.eccb" 
     xmlns="http://www.w3.org/ns/widgets"
     xmlns:gap="http://phonegap.com/ns/1.0"
-    version="0.1.9">
+    version="0.1.10">
 
     <name>Electronic Copyboard</name>
     
@@ -19,6 +19,7 @@
 	<plugin name="phonegap-plugin-barcodescanner" />
 	<plugin name="cordova-plugin-app-version" />
 	<plugin name="cordova-plugin-ble-central" />
+	<plugin name="cordova.plugins.diagnostic" />
 
     <icon src="img/etulipa_CMYK.png" width="150" height="150" />
 
