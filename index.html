@@ -193,6 +193,8 @@
     var CharPageChange = "7223adac-65ff-4c32-b76a-31901df0a818";
     var CharacteristicPage = "0d0a4662-2421-4fbd-90ab-a702ff0239b6";
     var CharacteristicText = "ee5d2e57-3490-4c06-956b-5a384b1cbaa4";
+    
+    var BleId;
 
     function BlePageChange(buffer)
     {
@@ -241,19 +243,8 @@
       console.log('BLE Scan');
       ble.startScan([EccbService], function(status)
       {
-        ble.stopScan();
         $('#ble-id').text(status.name);
-        ble.connect(status.id, function(status)
-        {
-          // close poupup
-        
-          // Subscribe to page-change notifications
-          ble.startNotification(status.id, EccbService, CharPageChange, BlePageChange, BleError);
-          
-          // Issue read to get current status from device
-          ble.read(status.id, EccbService, CharPageChange, BlePageChange, BleError);
-        },
-        BleError);
+        vBleId = status.id;
       }, 
       BleError);
     });
@@ -268,6 +259,21 @@
     {
       console.log('BluetoothConnectExec');
       ble.stopScan();
+
+alert(vBleId);
+
+      ble.connect(vBleId, function(status)
+      {
+        // close poupup
+      
+        // Subscribe to page-change notifications
+        ble.startNotification(status.id, EccbService, CharPageChange, BlePageChange, BleError);
+        
+        // Issue read to get current status from device
+        ble.read(status.id, EccbService, CharPageChange, BlePageChange, BleError);
+      },
+      BleError);
+
     }
   </script>
 
