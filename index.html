@@ -183,7 +183,7 @@
     <div role="main" class="ui-content">
       <h3>Bluetooth connect</h3>
       <p>TODO Scan BLE devices in range</p>
-      <p><span id="ble-id">***</span></p>
+      <p><span id="ble-id">.</span></p>
       <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" onclick="BluetoothConnectAbort();">Cancel</a>
       <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow" onclick="BluetoothConnectExec();">Done</a>
     </div>
@@ -241,6 +241,7 @@
     $('#BluetoothConnectPopup').on('popupbeforeposition', function(event, ui)
     {
       console.log('BLE Scan');
+        $('#ble-id').text("***");
       ble.startScan([EccbService], function(status)
       {
         $('#ble-id').text(status.name);
@@ -259,8 +260,6 @@
     {
       console.log('BluetoothConnectExec');
       ble.stopScan();
-
-alert(vBleId);
 
       ble.connect(vBleId, function(status)
       {

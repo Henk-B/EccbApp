@@ -2,7 +2,7 @@
 <widget id="nl.whitebream.eccb" 
     xmlns="http://www.w3.org/ns/widgets"
     xmlns:gap="http://phonegap.com/ns/1.0"
-    version="0.1.7">
+    version="0.1.8">
 
     <name>Electronic Copyboard</name>
     
@@ -24,7 +24,7 @@
 
     <feature name="http://api.phonegap.com/1.0/device" />
 	<preference name='phonegap-version' value='cli-9.0.0' />
-	<!--preference name="orientation" value="landscape" /-->
+	<preference name="orientation" value="default" />
     <preference name="target-device" value="universal" />
     <preference name="fullscreen" value="false" />
     <preference name="KeyboardShrinksView" value="true" />
