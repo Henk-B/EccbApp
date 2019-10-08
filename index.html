@@ -183,22 +183,96 @@
     <div role="main" class="ui-content">
       <h3>Bluetooth connect</h3>
       <p>TODO Scan BLE devices in range</p>
+      <p><span id="ble-id"></span></p>
       <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" onclick="BluetoothConnectAbort();">Cancel</a>
       <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow" onclick="BluetoothConnectExec();">Done</a>
     </div>
   </div>
   <script>
+    function BlePageChange(status)
+    {
+      if((status.status === "subscribedResult") || (status.status === "read"))
+      {
+        // Update page number
+        var bytes = bluetoothle.encodedStringToBytes(status.value);
+        if(bytes.length === 0)
+          return;
+
+        $('#screenIndex').val(bytes[0] + "/" + bytes[1]).button('refresh');
+        
+        // Request full page data
+//      $('#screenName').val(vScreens[vScreenIndex - 1].name);//.button('refresh');
+        // Request page text lines
+      
+      }
+    }
+    
+    function BleError(error)
+    {
+      var msg;
+
+      if(error.error && error.message)
+      {
+        var errorItems = [];
+
+        if (error.service)
+            errorItems.push("service: " + (uuids[error.service] || error.service));
+
+        if (error.characteristic)
+            errorItems.push("characteristic: " + (uuids[error.characteristic] || error.characteristic));
+
+        msg = "Error on " + error.error + ": " + error.message + (errorItems.length && (" (" + errorItems.join(", ") + ")"));
+      }
+      else
+      {
+        msg = error;
+      }
+      //log(msg, "error");
+        $('#ble-id').text(msg);
+
+      if(error.error === "read" && error.service && error.characteristic)
+      {
+        //reportValue(error.service, error.characteristic, "Error: " + error.message);
+      }
+    }
+    
     $('#BluetoothConnectPopup').on('popupbeforeposition', function(event, ui)
     {
       console.log('BLE Scan');
+      bluetoothle.startScan(function(status)
+      {
+        if(status.status === 'scanResult')
+        {
+          bluetoothle.stopScan();
+          $('#ble-id').text(status.name);
+          bluetoothle.connect(function(status)
+          {
+            // close poupup
+          
+            // Subscribe to page-change notifications
+            bluetoothle.subscribe(BlePageChange, BleError,
+            {"address": status.address, "service": "36a0ca50-bb8f-4ce4-b0a3-6c79a49d533f", "characteristic": "7223adac-65ff-4c32-b76a-31901df0a818"});
+            
+            // Issue read to get current status from device
+            bluetoothle.read(BlePageChange, BleError,
+            {"address": status.address, "service": "36a0ca50-bb8f-4ce4-b0a3-6c79a49d533f", "characteristic": "7223adac-65ff-4c32-b76a-31901df0a818"});
+          },
+          BleError, {"address": status.address});
+        }
+      }, 
+      BleError, {"services": ["36a0ca50-bb8f-4ce4-b0a3-6c79a49d533f"], "isConnectable": false});
     });
+    
     BluetoothConnectAbort = function()
     {
       console.log('BluetoothConnectAbort');
+      bluetoothle.stopScan();
     }
+    
     BluetoothConnectExec = function()
     {
       console.log('BluetoothConnectExec');
+      bluetoothle.stopScan();
     }
   </script>
 
@@ -338,6 +412,7 @@
     <div role="main" class="ui-content">
       <h3>Parameters for this page</h3>
       <p>TODO Set screen/page duration</p>
+      <p>TODO Set transition animation</p>
       <p>TODO Set timetriggered screen/page activation</p>
       <p>TODO Add GOTO mode to jump to non-sequential screen</p>
       <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Cancel</a>
@@ -405,7 +480,7 @@
       // Send screen data to display and request play at t=0
     }
 
-    ScreenReadScreen = function()
+    ScreenUpdateLocal = function()
     {
       // Update screen number indicator and label
       $('#screenIndex').val(vScreenIndex + "/" + vScreens.length).button('refresh');
@@ -424,16 +499,15 @@
           switch(vScreens[vScreenIndex - 1].linecfg[i] % 4)
           {
             case 2:   // Right align
-              $('#screenText tr:nth-child(' + (i + 1) + ') input').css('text-align', 'right');
+              line.css('text-align', 'right');
               break;
             case 3:   // Center align
-              $('#screenText tr:nth-child(' + (i + 1) + ') input').css('text-align', 'center');
+              line.css('text-align', 'center');
               break;
             default:
-              $('#screenText tr:nth-child(' + (i + 1) + ') input').css('text-align', 'left');
+              line.css('text-align', 'left');
               break;
           }
-
         }
       }
     }
@@ -457,7 +531,7 @@
         // Goto screen by reference index
         vScreenIndex = _this;
       }
-      ScreenReadScreen();
+      ScreenUpdateLocal();
     }
 
     $(document).ready(function()
@@ -471,7 +545,8 @@
         if($("body").pagecontainer("getActivePage").attr('id') == "content")
         {
           vScreenIndex = 1;
-          ScreenReadScreen();
+          //DisplayReadScreen();
+          ScreenUpdateLocal();
         }
       });
     });
