@@ -241,16 +241,15 @@
     $('#BluetoothConnectPopup').on('popupbeforeposition', function(event, ui)
     {
       console.log('BLE Scan');
-      //ble.startScan([EccbService], function(status)
-      ble.startScan([], function(status)
+      //ble.startScan([EccbService], function(device)
+      ble.startScan([], function(device)
       {
-        $('#ble-id').text(status.name + "," + status.id);
-        //var id = new Uint8Array(status.id);
-        //if((id[0] == 0x03) && (id[1] == 0x80) && (id[2] == 0xE1) && (id[3] == 0x00))
-        //{
-        //  $('#ble-id').text(status.name);
-        //  vBleId = status.id;
-        //}
+        if(device.id.slice(0, 11) === "03:80:E1:00")
+        {
+          //$('#ble-id').text(device.name + "," + device.id);
+          $('#ble-id').text(device.name);
+          vBleId = device.id;
+        }
       }, 
       BleError);
     });
