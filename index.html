@@ -239,7 +239,7 @@
     $('#BluetoothConnectPopup').on('popupbeforeposition', function(event, ui)
     {
       console.log('BLE Scan');
-      ble.startScan([EccbService], 15, function(status)
+      ble.startScan([EccbService], function(status)
       {
         ble.stopScan();
         $('#ble-id').text(status.name);
