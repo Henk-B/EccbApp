@@ -241,8 +241,8 @@
     $('#BluetoothConnectPopup').on('popupbeforeposition', function(event, ui)
     {
       console.log('BLE Scan');
-        $('#ble-id').text("***");
-      ble.startScan([EccbService], function(status)
+      //ble.startScan([EccbService], function(status)
+      ble.startScan([], function(status)
       {
         $('#ble-id').text(status.name);
         vBleId = status.id;
