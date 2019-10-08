@@ -189,16 +189,18 @@
     </div>
   </div>
   <script>
-    function BlePageChange(status)
+    var EccbService = "36a0ca50-bb8f-4ce4-b0a3-6c79a49d533f";
+    var CharPageChange = "7223adac-65ff-4c32-b76a-31901df0a818";
+    var CharacteristicPage = "0d0a4662-2421-4fbd-90ab-a702ff0239b6";
+    var CharacteristicText = "ee5d2e57-3490-4c06-956b-5a384b1cbaa4";
+
+    function BlePageChange(buffer)
     {
+      var data = new Uint8Array(buffer);
       if((status.status === "subscribedResult") || (status.status === "read"))
       {
         // Update page number
-        var bytes = bluetoothle.encodedStringToBytes(status.value);
-        if(bytes.length === 0)
-          return;
-
-        $('#screenIndex').val(bytes[0] + "/" + bytes[1]).button('refresh');
+        $('#screenIndex').val(data[0] + "/" + data[1]).button('refresh');
         
         // Request full page data
 //      $('#screenName').val(vScreens[vScreenIndex - 1].name);//.button('refresh');
@@ -239,40 +241,38 @@
     $('#BluetoothConnectPopup').on('popupbeforeposition', function(event, ui)
     {
       console.log('BLE Scan');
-      bluetoothle.startScan(function(status)
+      ble.startScan({"services": [EccbService]}, 15, function(status)
       {
         if(status.status === 'scanResult')
         {
-          bluetoothle.stopScan();
+          ble.stopScan();
           $('#ble-id').text(status.name);
-          bluetoothle.connect(function(status)
+          ble.connect(status.id, function(status)
           {
             // close poupup
           
             // Subscribe to page-change notifications
-            bluetoothle.subscribe(BlePageChange, BleError,
-            {"address": status.address, "service": "36a0ca50-bb8f-4ce4-b0a3-6c79a49d533f", "characteristic": "7223adac-65ff-4c32-b76a-31901df0a818"});
+            ble.startNotification(status.id, EccbService, CharPageChange, BlePageChange, BleError);
             
             // Issue read to get current status from device
-            bluetoothle.read(BlePageChange, BleError,
-            {"address": status.address, "service": "36a0ca50-bb8f-4ce4-b0a3-6c79a49d533f", "characteristic": "7223adac-65ff-4c32-b76a-31901df0a818"});
+            ble.read(status.id, EccbService, CharPageChange, BlePageChange, BleError);
           },
-          BleError, {"address": status.address});
+          BleError);
         }
       }, 
-      BleError, {"services": ["36a0ca50-bb8f-4ce4-b0a3-6c79a49d533f"], "isConnectable": false});
+      BleError, );
     });
     
     BluetoothConnectAbort = function()
     {
       console.log('BluetoothConnectAbort');
-      bluetoothle.stopScan();
+      ble.stopScan();
     }
     
     BluetoothConnectExec = function()
     {
       console.log('BluetoothConnectExec');
-      bluetoothle.stopScan();
+      ble.stopScan();
     }
   </script>
 
