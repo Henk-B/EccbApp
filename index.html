@@ -183,7 +183,7 @@
     <div role="main" class="ui-content">
       <h3>Bluetooth connect</h3>
       <p>TODO Scan BLE devices in range</p>
-      <p><span id="ble-id"></span></p>
+      <p><span id="ble-id">***</span></p>
       <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" onclick="BluetoothConnectAbort();">Cancel</a>
       <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow" onclick="BluetoothConnectExec();">Done</a>
     </div>
@@ -197,16 +197,14 @@
     function BlePageChange(buffer)
     {
       var data = new Uint8Array(buffer);
-      if((status.status === "subscribedResult") || (status.status === "read"))
-      {
-        // Update page number
-        $('#screenIndex').val(data[0] + "/" + data[1]).button('refresh');
-        
-        // Request full page data
-//      $('#screenName').val(vScreens[vScreenIndex - 1].name);//.button('refresh');
-        // Request page text lines
+
+      // Update page number
+      $('#screenIndex').val(data[0] + "/" + data[1]).button('refresh');
       
-      }
+      // Request full page data
+//    $('#screenName').val(vScreens[vScreenIndex - 1].name);//.button('refresh');
+      // Request page text lines
+    
     }
     
     function BleError(error)
@@ -241,26 +239,23 @@
     $('#BluetoothConnectPopup').on('popupbeforeposition', function(event, ui)
     {
       console.log('BLE Scan');
-      ble.startScan({"services": [EccbService]}, 15, function(status)
+      ble.startScan([EccbService], 15, function(status)
       {
-        if(status.status === 'scanResult')
+        ble.stopScan();
+        $('#ble-id').text(status.name);
+        ble.connect(status.id, function(status)
         {
-          ble.stopScan();
-          $('#ble-id').text(status.name);
-          ble.connect(status.id, function(status)
-          {
-            // close poupup
+          // close poupup
+        
+          // Subscribe to page-change notifications
+          ble.startNotification(status.id, EccbService, CharPageChange, BlePageChange, BleError);
           
-            // Subscribe to page-change notifications
-            ble.startNotification(status.id, EccbService, CharPageChange, BlePageChange, BleError);
-            
-            // Issue read to get current status from device
-            ble.read(status.id, EccbService, CharPageChange, BlePageChange, BleError);
-          },
-          BleError);
-        }
+          // Issue read to get current status from device
+          ble.read(status.id, EccbService, CharPageChange, BlePageChange, BleError);
+        },
+        BleError);
       }, 
-      BleError, );
+      BleError);
     });
     
     BluetoothConnectAbort = function()
