@@ -195,10 +195,17 @@
     var CharacteristicText = "ee5d2e57-3490-4c06-956b-5a384b1cbaa4";
     
     var BleId;
+    
+function bytesToString(buffer)
+{
+    return String.fromCharCode.apply(null, new Uint8Array(buffer));
+}
 
     function BlePageChange(buffer)
     {
       var data = new Uint8Array(buffer);
+      
+      $('#screenName').val(bytesToString(buffer));
 
       // Update page number
       $('#screenIndex').val(data[0] + "/" + data[1]).button('refresh');
@@ -211,31 +218,7 @@
     
     function BleError(error)
     {
-      var msg;
-
-      if(error.error && error.message)
-      {
-        var errorItems = [];
-
-        if (error.service)
-            errorItems.push("service: " + (uuids[error.service] || error.service));
-
-        if (error.characteristic)
-            errorItems.push("characteristic: " + (uuids[error.characteristic] || error.characteristic));
-
-        msg = "Error on " + error.error + ": " + error.message + (errorItems.length && (" (" + errorItems.join(", ") + ")"));
-      }
-      else
-      {
-        msg = error;
-      }
-      //log(msg, "error");
-        $('#ble-id').text(msg);
-
-      if(error.error === "read" && error.service && error.characteristic)
-      {
-        //reportValue(error.service, error.characteristic, "Error: " + error.message);
-      }
+      $('#ble-id').text("ERROR " + error);
     }
     
     $('#BluetoothConnectPopup').on('popupbeforeposition', function(event, ui)
@@ -246,8 +229,7 @@
       {
         if(device.id.slice(0, 11) === "03:80:E1:00")
         {
-          //$('#ble-id').text(device.name + "," + device.id);
-          $('#ble-id').text(device.name);
+          $('#ble-id').text(device.name + " (" + device.id + ")");
           vBleId = device.id;
         }
       }, 
@@ -265,15 +247,15 @@
       console.log('BluetoothConnectExec');
       ble.stopScan();
 
-      ble.connect(vBleId, function(status)
+      ble.connect(vBleId, function()
       {
         // close poupup
-      
-        // Subscribe to page-change notifications
-        ble.startNotification(status.id, EccbService, CharPageChange, BlePageChange, BleError);
         
         // Issue read to get current status from device
-        ble.read(status.id, EccbService, CharPageChange, BlePageChange, BleError);
+        ble.read(vBleId, EccbService, CharPageChange, BlePageChange, BleError);
+      
+        // Subscribe to page-change notifications
+        ble.startNotification(vBleId, EccbService, CharPageChange, BlePageChange, BleError);
       },
       BleError);
 
