@@ -227,7 +227,9 @@
     {
       if(vBleId)
       {
-        var data = new Uint8Array([0, page]);
+        var data = new ArrayBuffer(2);
+        data[0] = 0;
+        data[1] = page;
         
         // Request page change
         ble.write(vBleId, EccbService, CharacteristicPage, data, success, error);
