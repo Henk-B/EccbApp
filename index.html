@@ -238,10 +238,10 @@
           vScreens[vScreenIndex - 1].effect = String.fromCharCode.apply(null, new Uint8Array(buffer, 12, labelidx));
           vScreens[vScreenIndex - 1].name = String.fromCharCode.apply(null, new Uint8Array(buffer, labelidx));
         }
+        
+        // Request page text lines
+        ble.read(vBleId, EccbService, CharacteristicText, BleTextChanged, BleError);
       }
-      
-      // Request page text lines
-      ble.read(vBleId, EccbService, CharacteristicText, BleTextChanged, BleError);
     }
 
     function BlePageChange(page, success, error)
@@ -458,6 +458,7 @@
       <a id="browseFwd" href="#" class="ui-icon-carat-r ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="ScreenGoto(this);">Next</a>
     </td>
   </tr></table>
+    <div class="statusMessage">&nbsp;</div>
 
   <table id="screenText" style="text-align:center;">
     <tr id="line1"><td><input type="text" class="eccb" data-mini="true" value="" onchange="lineUpdate(1);"/></td>
