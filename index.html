@@ -223,12 +223,12 @@
       {
         var labelidx;
       
-        for (labelidx = 12; labelidx < d1.length; labelidx++)
-          if(d3[labelidx] = 0)
+        for (labelidx = 12; labelidx < data.length; labelidx++)
+          if(data[labelidx] = 0)
             break;
       
         // Get page effect
-        if(labelidx == d1.length)
+        if(labelidx == data.length)
           vScreens[vScreenIndex - 1].effect = String.fromCharCode.apply(null, new Uint8Array(buffer, 12, labelidx));
         else
           vScreens[vScreenIndex - 1].effect = "";
