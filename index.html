@@ -188,6 +188,14 @@
       <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow" onclick="BluetoothConnectExec();">Done</a>
     </div>
   </div>
+  <div data-role="popup" id="BluetoothDownloadPopup" data-theme="a" data-position-to="window" data-transition="pop" class="ui-corner-all">
+    <div role="main" class="ui-content">
+      <h3>Download content from display?</h3>
+      <p></p>
+      <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" onclick="BluetoothConnectAbort();">No</a>
+      <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow" onclick="BluetoothConnectExec();">Yes</a>
+    </div>
+  </div>
   <script>
     var EccbService = "36a0ca50-bb8f-4ce4-b0a3-6c79a49d533f";
     var CharPageChange = "7223adac-65ff-4c32-b76a-31901df0a818";
@@ -197,24 +205,19 @@
     var BleId;
     var vLines;
     
-function bytesToString(buffer)
-{
-    return String.fromCharCode.apply(null, new Uint8Array(buffer));
-}
-
     function BleTextChange(buffer)
     {
       var data = new Uint8Array(buffer, 0, 1);
       var text = String.fromCharCode.apply(null, new Uint8Array(buffer, 1));
       
-      vScreens[vScreenIndex-1].lines[data[0]] = text;
-      if(data[0] < 5)
+      vScreens[vScreenIndex - 1].lines[data[0]] = text;
+      if((data[0] - 1) < 5)
         ble.read(vBleId, EccbService, CharacteristicText, BleTextChange, BleError);
       else
         ScreenUpdateLocal();
     }
     
-    function BlePageChange(buffer)
+    function BlePageChanged(buffer)
     {
       var data = new Uint8Array(buffer);
       
@@ -222,14 +225,49 @@ function bytesToString(buffer)
       
       // Update page number
       vScreenIndex = data[0] + 1;
-      $('#screenIndex').val(vScreenIndex + "/" + data[1]).button('refresh');
+      //$('#screenIndex').val(vScreenIndex + "/" + data[1]).button('refresh');
       
       // Request full page data
-//      ble.read(vBleId, EccbService, CharacteristicPage, BlePageChange, BleError);
+//      ble.read(vBleId, EccbService, CharacteristicPage, BlePageChanged, BleError);
       
 //    $('#screenName').val(vScreens[vScreenIndex - 1].name);//.button('refresh');
       // Request page text lines
       ble.read(vBleId, EccbService, CharacteristicText, BleTextChange, BleError);
+    }
+
+    function BlePageChange(page, success, error)
+    {
+      if(vBleId)
+      {
+        var data = new Uint8Array([0, page]);
+        
+        // Request page change
+        ble.write(vBleId, EccbService, CharacteristicPage, data, success, error);
+      }
+      else
+        error();
+    }
+    
+    function BleTextChange(pageidx, lineidx, textcfg, text, success, error)
+    {
+      //var textcfg = "";
+      //var text = 
+      
+      if(vBleId)
+      {
+        var d1 = String.fromCharCode.apply(null, new Uint8Array([pageidx, lineidx]);
+        d1 += textcfg + "," + text;
+        
+        var d2 = new ArrayBuffer(d1.length);
+        var d3 = new Uint8Array(d2);
+        for (var i = 0, strLen = d1.length; i < strLen; i++)
+          d3[i] = d1.charCodeAt(i);
+        
+        // Request text change
+        ble.write(vBleId, EccbService, CharacteristicText, d2, success, error);
+      }
+      else
+        error();
     }
     
     function BleError(error)
@@ -268,10 +306,10 @@ function bytesToString(buffer)
         // close poupup
         
         // Issue read to get current status from device
-        ble.read(vBleId, EccbService, CharPageChange, BlePageChange, BleError);
+        ble.read(vBleId, EccbService, CharPageChange, BlePageChanged, BleError);
       
         // Subscribe to page-change notifications
-        ble.startNotification(vBleId, EccbService, CharPageChange, BlePageChange, BleError);
+        ble.startNotification(vBleId, EccbService, CharPageChange, BlePageChanged, BleError);
       },
       BleError);
 
@@ -398,15 +436,15 @@ function bytesToString(buffer)
   </tr></table>
 
   <table id="screenText" style="text-align:center;">
-    <tr id="line1"><td><input type="text" class="eccb" data-mini="true" value="" /></td>
+    <tr id="line1"><td><input type="text" class="eccb" data-mini="true" value="" onchange="lineUpdate(1);"/></td>
       <td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="lineConfig(1);"></a></td></tr>
-    <tr id="line2"><td><input type="text" class="eccb" data-mini="true" value="" /></td>
+    <tr id="line2"><td><input type="text" class="eccb" data-mini="true" value="" onchange="lineUpdate(2);" /></td>
       <td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="lineConfig(2);"></a></td></tr>
-    <tr id="line3"><td><input type="text" class="eccb" data-mini="true" value="" /></td>
+    <tr id="line3"><td><input type="text" class="eccb" data-mini="true" value="" onchange="lineUpdate(3);" /></td>
       <td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="lineConfig(3);"></a></td></tr>
-    <tr id="line4"><td><input type="text" class="eccb" data-mini="true" value="" /></td>
+    <tr id="line4"><td><input type="text" class="eccb" data-mini="true" value="" onchange="lineUpdate(4);" /></td>
       <td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="lineConfig(4);"></a></td></tr>
-    <tr id="line5"><td><input type="text" class="eccb" data-mini="true" value="" /></td>
+    <tr id="line5"><td><input type="text" class="eccb" data-mini="true" value="" onchange="lineUpdate(5);" /></td>
       <td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="lineConfig(5);"></a></td></tr>
   </tr></table>
 
@@ -464,6 +502,13 @@ function bytesToString(buffer)
     {
       $('#lineConfig span#no').text(no);
       $('#LineConfigPopup').popup('open');
+    }
+    lineUpdate = function(no)
+    {
+      var textcfg = "";
+      var text = $('#screenText tr:nth-child(' + (i + 1) + ') input').val();
+      
+      BleTextChange(vScreenIndex - 1, no -1, textcfg, text);
     }
   </script>
 
@@ -533,7 +578,7 @@ function bytesToString(buffer)
         // Goto screen by reference index
         vScreenIndex = _this;
       }
-      ScreenUpdateLocal();
+      BlePageChange(vScreenIndex - 1, function(){}, function(){ScreenUpdateLocal();});
     }
 
     $(document).ready(function()
