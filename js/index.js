@@ -493,7 +493,7 @@ var app =
 	if(message != "")
 	{
       console.log(message); 
-      if(debugmessages !== undefined)
+      if(typeof(debugmessages) !== 'undefined')
       {
         debugmessages.value += message + "\n";
         debugmessages.scrollTop = debugmessages.scrollHeight;
@@ -501,7 +501,7 @@ var app =
     }
 
     window.clearTimeout(app.statusTimeout);
-    $('div.statusMessage').html(message);
+    $('div.statusMessage').text(message);
     $('div.statusMessage').removeClass('fadeout');
     $('div.statusMessage').addClass('fadein');
 
