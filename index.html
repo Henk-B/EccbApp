@@ -213,12 +213,30 @@
       
       // Update page number
       vScreenIndex = data[0] + 1;
-      //$('#screenIndex').val(vScreenIndex + "/" + data[1]).button('refresh');
       
       // Request full page data
-//      ble.read(vBleId, EccbService, CharacteristicPage, BlePageChanged, BleError);
+      if(buffer.length == 12)
+      {
+        ble.read(vBleId, EccbService, CharacteristicPage, BlePageChanged, BleError);
+      }
+      else
+      {
+        var labelidx;
       
-//    $('#screenName').val(vScreens[vScreenIndex - 1].name);//.button('refresh');
+        for (labelidx = 12; labelidx < d1.length; labelidx++)
+          if(d3[labelidx] = 0)
+            break;
+      
+        // Get page effect
+        if(labelidx == d1.length)
+          vScreens[vScreenIndex - 1].effect = String.fromCharCode.apply(null, new Uint8Array(buffer, 12, labelidx));
+        else
+          vScreens[vScreenIndex - 1].effect = "";
+      
+        // Get page label
+        vScreens[vScreenIndex - 1].label = String.fromCharCode.apply(null, new Uint8Array(buffer, labelidx));
+      }
+      
       // Request page text lines
       ble.read(vBleId, EccbService, CharacteristicText, BleTextChanged, BleError);
     }
