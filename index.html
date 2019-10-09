@@ -144,7 +144,7 @@
   </td></tr></table>
 
   <table class="control ui-btn-right"><tr><td>
-    <a id="DisplaySave" href="#" class="ui-icon-check ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline ui-state-disabled">Save to display</a>
+    <a id="DisplaySave" href="#" class="ui-icon-check ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="BluetoothSave();">Save to display</a>
     <a id="DisplayConnect" href="#BluetoothConnectPopup" class="ui-icon-clock ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" data-rel="popup">Connect to display</a>
     <a id="SysInfo" href="#SystemInfoPopup" class="ui-icon-info ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" data-rel="popup">System info</a>
   </td></tr></table>
@@ -182,7 +182,7 @@
   <div data-role="popup" id="BluetoothConnectPopup" data-theme="a" data-position-to="window" data-transition="pop" class="ui-corner-all">
     <div role="main" class="ui-content">
       <h3>Bluetooth connect</h3>
-      <p>TODO Scan BLE devices in range</p>
+      <p>Scanning BLE devices in range</p>
       <p><span id="ble-id">.</span></p>
       <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" onclick="BluetoothConnectAbort();">Cancel</a>
       <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow" onclick="BluetoothConnectExec();">Done</a>
@@ -209,7 +209,7 @@
       var data = new Uint8Array(buffer);
       
       // Request full page data
-      if(vScreenIndex != data[0] + 1)
+      if(data.length == 12)
       {
         // Update page number
         vScreenIndex = data[0] + 1;
@@ -331,7 +331,32 @@
         ble.startNotification(vBleId, EccbService, CharPageChange, BlePageChanged, BleError);
       },
       BleError);
+    }
+    
+    BluetoothSave = function()
+    {
+      if(vBleId)
+      {
+        var d1 = new ArrayBuffer(1);
+        var d2 = new Uint8Array(d1);
+        d2[0] = 0x11;
+        
+        // Request save data
+        ble.write(vBleId, EccbService, CharacteristicPage, d1, success, error);
+      }
+    }
 
+    BluetoothRefresh = function()
+    {
+      if(vBleId)
+      {
+        var d1 = new ArrayBuffer(1);
+        var d2 = new Uint8Array(d1);
+        d2[0] = 0x10;
+        
+        // Request save data
+        ble.write(vBleId, EccbService, CharacteristicPage, d1, success, error);
+      }
     }
   </script>
 
@@ -448,7 +473,7 @@
     <td style="text-align:center;"><input id="screenName" type="text" data-inline="true" data-mini="true" value="Screen1"></td>
     <td style="text-align:right;">
       <a id="screenCfg" href="#ScreenConfigPopup" class="ui-icon-clock ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" data-rel="popup" data-position-to="window" data-transition="pop">Config</a>
-      <a id="screenRefresh" href="#" class="ui-icon-eye ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="ScreenRefresh();">Refresh</a>
+      <a id="screenRefresh" href="#" class="ui-icon-eye ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="BluetoothRefresh();">Refresh</a>
       <a id="screenUndo" href="#" class="ui-icon-back ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="ScreenReadScreen();">Undo</a>
       <a id="browseFwd" href="#" class="ui-icon-carat-r ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="ScreenGoto(this);">Next</a>
     </td>
@@ -848,7 +873,7 @@
 
 <script type="text/javascript">
   app.initialize();
-  app.setStatus("Init");
+  //app.setStatus("Init");
 </script>
 
 </body>
