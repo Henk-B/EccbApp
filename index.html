@@ -506,9 +506,9 @@
     lineUpdate = function(no)
     {
       var textcfg = "";
-      var text = $('#screenText tr:nth-child(' + (i + 1) + ') input').val();
+      var text = $('#screenText tr:nth-child(' + no + ') input').val();
       
-      BleTextChange(vScreenIndex - 1, no -1, textcfg, text);
+      BleTextChange(vScreenIndex-1, no-1, textcfg, text);
     }
   </script>
 
