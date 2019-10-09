@@ -245,7 +245,7 @@
       var text = String.fromCharCode.apply(null, new Uint8Array(buffer, 1));
       
       vScreens[vScreenIndex - 1].lines[data[0]] = text;
-      if((data[0] - 1) < 5)
+      if((data[0] + 1) < 5)
         ble.read(vBleId, EccbService, CharacteristicText, BleTextChanged, BleError);
       else
         ScreenUpdateLocal();
@@ -758,8 +758,10 @@
       {
         if($("body").pagecontainer("getActivePage").attr('id') == "about")
         {
+          app.setStatus("try cordova.getAppVersion.getVersionNumber");
           cordova.getAppVersion.getVersionNumber(function (version)
           {
+            app.setStatus("cordova.getAppVersion.getVersionNumber " + version);
             document.getElementById("versionapp").innerText = "App version " + version;
           });
 
