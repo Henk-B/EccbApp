@@ -227,12 +227,13 @@
     {
       if(vBleId)
       {
-        var data = new ArrayBuffer(2);
-        data[0] = 0;
-        data[1] = page;
+        var d1 = new ArrayBuffer(2);
+        var d2 = new Uint8Array(d1);
+        d2[0] = 0;
+        d2[1] = page;
         
         // Request page change
-        ble.write(vBleId, EccbService, CharacteristicPage, data, success, error);
+        ble.write(vBleId, EccbService, CharacteristicPage, d1, success, error);
       }
       else
         error();
