@@ -246,7 +246,7 @@
       
       vScreens[vScreenIndex - 1].lines[data[0]] = text;
       if((data[0] - 1) < 5)
-        ble.read(vBleId, EccbService, CharacteristicText, BleTextChange, BleError);
+        ble.read(vBleId, EccbService, CharacteristicText, BleTextChanged, BleError);
       else
         ScreenUpdateLocal();
     }
