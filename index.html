@@ -97,6 +97,9 @@
       {
         if($("body").pagecontainer("getActivePage").attr('id') == "content")
         {
+          ble.close(vBleId);
+          vBleId = "";
+          
           app.disconnect(true);
           navigator.app.exitApp();	// Android only
         }
@@ -202,7 +205,7 @@
     var CharacteristicPage = "0d0a4662-2421-4fbd-90ab-a702ff0239b6";
     var CharacteristicText = "ee5d2e57-3490-4c06-956b-5a384b1cbaa4";
     
-    var BleId;
+    var vBleId;
     
     function BlePageChanged(buffer)
     {
@@ -253,7 +256,7 @@
         // Request page change
         ble.write(vBleId, EccbService, CharacteristicPage, d1, success, error);
       }
-      else
+      else if(typeof(error) === 'function')
         error();
     }
         
@@ -269,12 +272,12 @@
         ScreenUpdateLocal();
     }
 
-    function BleTextChange(pageidx, lineidx, textcfg, text, success, error)
+    function BleTextChange(pageidx, lineidx, text, success, error)
     {
       if(vBleId)
       {
         var d1 = String.fromCharCode.apply(null, new Uint8Array([pageidx, lineidx]));
-        d1 += textcfg + "," + text;
+        d1 += text;
         
         var d2 = new ArrayBuffer(d1.length);
         var d3 = new Uint8Array(d2);
@@ -284,7 +287,7 @@
         // Request text change
         ble.write(vBleId, EccbService, CharacteristicText, d2, success, error);
       }
-      else
+      else if(typeof(error) === 'function')
         error();
     }
     
@@ -327,6 +330,17 @@
       
         // Subscribe to page-change notifications
         ble.startNotification(vBleId, EccbService, CharPageChange, BlePageChanged, BleError);
+        
+        // Send time and date to device
+        var d1 = new ArrayBuffer(5);
+        var d2 = new Uint8Array(d1);
+        d2[0] = 0x20;
+        var time = Date.now() / 1000 | 0;
+        d2[1] = time % 256; time / 256;
+        d2[2] = time % 256; time / 256;
+        d2[3] = time % 256; time / 256;
+        d2[4] = time % 256; time / 256;
+        ble.write(vBleId, EccbService, CharacteristicPage, d1, function(){}, BleError);
       },
       BleError);
     }
@@ -468,7 +482,7 @@
       <a id="browsePrv" href="#" class="ui-icon-carat-l ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="ScreenGoto(this);" style="margin-left:8px;">Previous</a>
       <input id="screenIndex" type="button" data-inline="true" data-mini="true" value="1/6" onclick="$('#ScreenArrangePopup').popup('open');">
     </td>
-    <td style="text-align:center;"><input id="screenName" type="text" data-inline="true" data-mini="true" value="Screen1"></td>
+    <td style="text-align:center;"><input id="screenName" type="text" data-inline="true" data-mini="true" readonly value="Screen1"></td>
     <td style="text-align:right;">
       <a id="screenCfg" href="#ScreenConfigPopup" class="ui-icon-clock ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" data-rel="popup" data-position-to="window" data-transition="pop">Config</a>
       <a id="screenRefresh" href="#" class="ui-icon-eye ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="BluetoothRefresh();">Refresh</a>
@@ -494,18 +508,41 @@
   <div data-role="popup" id="ScreenConfigPopup" data-theme="a" data-transition="pop" data-position-to="window" class="ui-corner-all">
     <div role="main" class="ui-content">
       <h3>Parameters for this page</h3>
-      <p>TODO Set screen/page duration</p>
-      <p>TODO Set transition animation</p>
-      <p>TODO Set timetriggered screen/page activation</p>
+      
+      <label for="ScreenName">Duration</label>
+      <input id="ScreenName" type="text" data-mini="true" value="x" />
+      <label for="ScreenDuration">Duration</label>
+      <input id="ScreenDuration" type="number" data-mini="true" value="0" />
+      
+      <label for="ScreenEffect">Effect</label>
+      <select id="ScreenEffect" data-mini="true" data-native-menu="false"><option value="NONE,">None</option><option value="RADAR,">Radar</option><option value="BUBBLE,">Bubble</option></select>
+      <label for="ScreenRefresh">Refresh</label>
+      <input id="ScreenRefresh" type="number" data-mini="true" value="0" />
+
+      <label for="ScreenAlarm">Alarm</label>
+      <input id="ScreenAlarm" type="datetime-local" data-mini="true" value="" />
+      
       <p>TODO Add GOTO mode to jump to non-sequential screen</p>
       <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Cancel</a>
       <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow" onclick="ScreenConfigExec();">Done</a>
     </div>
   </div>
   <script>
+    $('#ScreenConfigPopup').on('popupbeforeposition', function(event, ui)
+    {
+      $('#ScreenName').val(vScreens[vScreenIndex - 1].name);
+      $('#ScreenEffect').val(vScreens[vScreenIndex - 1].effect).selectmenu('refresh');
+      $('#ScreenDuration').val(vScreens[vScreenIndex - 1].duration);
+      $('#ScreenRefresh').val(vScreens[vScreenIndex - 1].refresh);
+    });
+    
     ScreenConfigExec = function()
     {
-      console.log('ScreenConfigExec');
+      vScreens[vScreenIndex - 1].name = $('#ScreenName').val();
+      vScreens[vScreenIndex - 1].effect = $('#ScreenEffect').val();
+      vScreens[vScreenIndex - 1].duration = $('#ScreenDuration').val();
+      vScreens[vScreenIndex - 1].refresh = $('#ScreenRefresh').val(); 
+      ScreenUpdateLocal();
     }
   </script>
 
@@ -527,31 +564,117 @@
   <div data-role="popup" id="LineConfigPopup" data-theme="a" data-transition="pop" data-position-to="window" class="ui-corner-all">
     <div role="main" class="ui-content">
       <h3>Parameters for text line <span id="no">N</span></h3>
-      <p>TODO Set left/center/right align</p>
-      <p>TODO Set bold text mode, set timestamp parse mode</p>
-      <p>TODO Set scroll mode left/right clear, ticker</p>
+      
+      <select id="TextAlign" data-mini="true" data-native-menu="false"><option value="">Keep previous text</option><option value="L">Left aligned</option><option value="C">Center aligned</option><option value="R">Right aligned</option></select>
+      
+      <select id="TextScroll" data-mini="true" data-native-menu="false"><option value="">Static text</option><option value="SL">Scroll R>L</option><option value="SR,">Scroll L>R</option><option value="TL">Ticker R>L</option><option value="TR">Ticker L>R</option></select>
+      
+      <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
+      <label for="TextBold">Bold text</label>
+      <input id="TextBold" type="checkbox" data-role="flipswitch" data-on-text="Bold" data-off-text="Normal" data-wrapper-class="custom-size-flipswitch" />
+
+      <label for="ParseDate">Parse date/time</label>
+      <input id="ParseDate" type="checkbox" data-role="flipswitch" data-on-text="Parse h:m:s" data-off-text="h:m:s as text" data-wrapper-class="custom-size-flipswitch" />
+  </fieldset>
+
       <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Cancel</a>
       <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow" onclick="LineConfigExec();">Done</a>
     </div>
   </div>
   <script>
+    $('#LineConfigPopup').on('popupbeforeposition', function(event, ui)
+    {
+      var line = vScreens[vScreenIndex-1].lines[parseInt($('#LineConfigPopup span#no').text())-1].split(",")[0];
+
+      $('#TextAlign').val("M");
+      $('#TextScroll').val("");
+
+      $('#TextBold').prop("checked", false);
+      $('#ParseDate').prop("checked", false);
+      
+      for(var j = 0; j < line.length; j++)
+      {
+        switch(line[j])
+        {
+          case 'B': // Bold
+            $('#TextBold').prop("checked", true);
+          break;
+
+          case 'P': // Parser for date/time
+            $('#ParseDate').prop("checked", true);
+          break;
+
+          case 'S': // Scroll
+            //$('#TextScroll').val(x);
+          break;
+
+          case 'T': // Ticker
+          break;
+
+          case 'L': // Left aligned
+          case 'C': // Center aligned
+          case 'R': // Right aligned
+            $('#TextAlign').val(line[j]).selectmenu('refresh');
+          break;
+          
+          case ' ':
+          break;
+          
+          default:
+            console.log("LineConfigPopup uncaught '" + line[j] + "'");
+          break;
+        }
+      }
+      $('#TextAlign').selectmenu('refresh');
+      $('#TextScroll').selectmenu('refresh');
+      
+      if($('#TextBold').prop('checked'))
+        $('#TextBold').parent().addClass('ui-flipswitch-active');
+      else
+        $('#TextBold').parent().removeClass('ui-flipswitch-active');
+
+      if($('#ParseDate').prop('checked'))
+        $('#ParseDate').parent().addClass('ui-flipswitch-active');
+      else
+        $('#ParseDate').parent().removeClass('ui-flipswitch-active');
+    });
+    
     LineConfigExec = function()
     {
-      console.log('LineConfigExec');
+      var linecfg = "";
+      
+      linecfg += $('#TextAlign').val();
+      if(linecfg.length != 0)
+      {
+        if($('#TextBold').prop('checked'))
+          linecfg += "B";
+        if($('#ParseDate').prop('checked'))
+          linecfg += "P";
+
+        if(linecfg.length != 0)
+          linecfg += " ";
+    
+        linecfg += $('#TextScroll').val();
+
+        linecfg += ","
+        linecfg += vScreens[vScreenIndex-1].lines[parseInt($('#LineConfigPopup span#no').text())-1].split(",")[1];
+      }
+      vScreens[vScreenIndex-1].lines[parseInt($('#LineConfigPopup span#no').text())-1] = linecfg;
+      ScreenUpdateLocal();
     }
   </script>
   <script>
     lineConfig = function(no)
     {
-      $('#lineConfig span#no').text(no);
+      $('#LineConfigPopup span#no').text(no);
       $('#LineConfigPopup').popup('open');
     }
     lineUpdate = function(no)
     {
-      var textcfg = "";
-      var text = $('#screenText tr:nth-child(' + no + ') input').val();
-      
-      BleTextChange(vScreenIndex-1, no-1, textcfg, text);
+      var text = vScreens[vScreenIndex-1].lines[no-1].split(",")[0] + ",";
+      text += $('#screenText tr:nth-child(' + no + ') input').val();
+      vScreens[vScreenIndex-1].lines[no-1] = text;
+      BleTextChange(vScreenIndex-1, no-1, text);
     }
   </script>
 
@@ -559,11 +682,13 @@
     var vScreenIndex = 1;
     
     // Create array of demo screens 
+    // L=Left,M=Middle,R=Right,B=Bold,P=Parsers
+    // S=Scroll,T=Ticker
     var vScreens = new Array();
-    vScreens[0] = {'name':'Intro', 'effect':'RADAR,', 'duration':60, 'refresh':6, 'goto':0, 'lines':['intro text 1', 'intro text 2', 'intro text 3', 'intro text 4', 'intro text 5'], 'linecfg':[1, 3, 2, 3, 1]};
-    vScreens[1] = {'name':'Etulipa', 'effect':'BUBBLE,', 'duration':60, 'refresh':6, 'goto':0, 'lines':['E T U L I P A', 'presents', '', 'Electronic controlled', 'Copyboard'], 'linecfg':[128+3, 3, 3, 3, 3]};
-    vScreens[2] = {'name':'Page', 'effect':'RADAR,', 'duration':60, 'refresh':6, 'goto':0, 'lines':['', '', 'note that the first', 'line is preserved', 'from previous screen'], 'linecfg':[0, 1, 3, 3, 3]};
-    vScreens[3] = {'name':'Outro', 'effect':'NONE,', 'duration':60, 'refresh':6, 'goto':0, 'lines':['outro text 1', 'outro text 2', 'outro text 3', 'outro text 4', 'outro text 5'], 'linecfg':[1, 2, 3, 2, 1]};
+    vScreens[0] = {'name':'Intro', 'effect':'RADAR,', 'duration':60, 'refresh':6, 'goto':0, 'lines':['L,intro text 1', 'CBP,intro text 2', 'R,intro text 3', 'C,intro text 4', 'L,intro text 5']};
+    vScreens[1] = {'name':'Etulipa', 'effect':'BUBBLE,', 'duration':60, 'refresh':6, 'goto':0, 'lines':['CB,E T U L I P A', 'CT,presents', '', 'CT,Electronic controlled', 'CT,Copyboard']};
+    vScreens[2] = {'name':'Page', 'effect':'RADAR,', 'duration':60, 'refresh':6, 'goto':0, 'lines':['', 'L,', 'L,note that the first', 'C,line is preserved', 'R,from previous screen']};
+    vScreens[3] = {'name':'Outro', 'effect':'NONE,', 'duration':60, 'refresh':6, 'goto':0, 'lines':['L,outro text 1', 'C,outro text 2', 'R,outro text 3', 'R,outro text 4', 'R,outro text 5']};
 
     ScreenRefresh = function()
     {
@@ -577,26 +702,53 @@
       $('#screenName').val(vScreens[vScreenIndex - 1].name);//.button('refresh');
       
       // Retrieve screen data from currently selected screen
-      for(i = 0; i < 5; i++)
+      for(i = 0; i < vScreens[vScreenIndex - 1].lines.length; i++)
       {
         var line = $('#screenText tr:nth-child(' + (i + 1) + ') input');
+        var split = vScreens[vScreenIndex - 1].lines[i].split(",");
         
-        if(vScreens[vScreenIndex - 1].linecfg[i] != 0)
+        if(split.length >= 2)
         {
-          line.val(vScreens[vScreenIndex - 1].lines[i]);
-          line.css('font-weight', vScreens[vScreenIndex - 1].linecfg[i] & 128 ? 'bold' : '');
-          
-          switch(vScreens[vScreenIndex - 1].linecfg[i] % 4)
+          line.val(split[1]);
+
+          line.css('font-weight', '');
+
+          for(var j = 0; j < split[0].length; j++)
           {
-            case 2:   // Right align
-              line.css('text-align', 'right');
+            switch(split[0][j])
+            {
+              case 'B': // Bold
+                line.css('font-weight', 'bold');
               break;
-            case 3:   // Center align
-              line.css('text-align', 'center');
+
+              case 'P': // Parser for date/time
+                //$('#ParseDate').prop("checked", true);
               break;
-            default:
-              line.css('text-align', 'left');
+
+              case 'S': // Scroll
+                //$('#TextScroll').val(x);
               break;
+
+              case 'T': // Ticker
+              break;
+
+              case 'L': // Left aligned
+                line.css('text-align', 'left');
+              break;
+              case 'C': // Center aligned
+                line.css('text-align', 'center');
+              break;
+              case 'R': // Right aligned
+                line.css('text-align', 'right');
+              break;
+              
+              case ' ':
+              break;
+              
+              default:
+                console.log("ScreenUpdateLocal uncaught '" + split[0][j] + "'");
+              break;
+            }
           }
         }
       }
