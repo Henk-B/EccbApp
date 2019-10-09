@@ -205,18 +205,6 @@
     var BleId;
     var vLines;
     
-    function BleTextChange(buffer)
-    {
-      var data = new Uint8Array(buffer, 0, 1);
-      var text = String.fromCharCode.apply(null, new Uint8Array(buffer, 1));
-      
-      vScreens[vScreenIndex - 1].lines[data[0]] = text;
-      if((data[0] - 1) < 5)
-        ble.read(vBleId, EccbService, CharacteristicText, BleTextChange, BleError);
-      else
-        ScreenUpdateLocal();
-    }
-    
     function BlePageChanged(buffer)
     {
       var data = new Uint8Array(buffer);
@@ -232,7 +220,7 @@
       
 //    $('#screenName').val(vScreens[vScreenIndex - 1].name);//.button('refresh');
       // Request page text lines
-      ble.read(vBleId, EccbService, CharacteristicText, BleTextChange, BleError);
+      ble.read(vBleId, EccbService, CharacteristicText, BleTextChanged, BleError);
     }
 
     function BlePageChange(page, success, error)
@@ -247,7 +235,19 @@
       else
         error();
     }
-    
+        
+    function BleTextChanged(buffer)
+    {
+      var data = new Uint8Array(buffer, 0, 1);
+      var text = String.fromCharCode.apply(null, new Uint8Array(buffer, 1));
+      
+      vScreens[vScreenIndex - 1].lines[data[0]] = text;
+      if((data[0] - 1) < 5)
+        ble.read(vBleId, EccbService, CharacteristicText, BleTextChange, BleError);
+      else
+        ScreenUpdateLocal();
+    }
+
     function BleTextChange(pageidx, lineidx, textcfg, text, success, error)
     {
       //var textcfg = "";
