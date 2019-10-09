@@ -215,7 +215,7 @@
       vScreenIndex = data[0] + 1;
       
       // Request full page data
-      if(buffer.length == 12)
+      if(data.length == 12)
       {
         ble.read(vBleId, EccbService, CharacteristicPage, BlePageChanged, BleError);
       }
@@ -227,14 +227,17 @@
           if(data[labelidx] = 0)
             break;
       
-        // Get page effect
+        // Get page effect and label
         if(labelidx == data.length)
-          vScreens[vScreenIndex - 1].effect = String.fromCharCode.apply(null, new Uint8Array(buffer, 12, labelidx));
-        else
+        {
           vScreens[vScreenIndex - 1].effect = "";
-      
-        // Get page label
-        vScreens[vScreenIndex - 1].label = String.fromCharCode.apply(null, new Uint8Array(buffer, labelidx));
+          vScreens[vScreenIndex - 1].label = String.fromCharCode.apply(null, new Uint8Array(buffer, 12));
+        }
+        else
+        {
+          vScreens[vScreenIndex - 1].effect = String.fromCharCode.apply(null, new Uint8Array(buffer, 12, labelidx));
+          vScreens[vScreenIndex - 1].label = String.fromCharCode.apply(null, new Uint8Array(buffer, labelidx));
+        }
       }
       
       // Request page text lines
