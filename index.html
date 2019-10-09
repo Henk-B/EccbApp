@@ -234,7 +234,7 @@
         if(labelidx == 12)  // No effect specified
           vScreens[vScreenIndex - 1].effect = "";
         else
-          vScreens[vScreenIndex - 1].effect = String.fromCharCode.apply(null, new Uint8Array(buffer, 12, labelidx));
+          vScreens[vScreenIndex - 1].effect = String.fromCharCode.apply(null, new Uint8Array(buffer, 12, labelidx - 12));
         
         if(labelidx == data.length)
           vScreens[vScreenIndex - 1].name = "";
