@@ -203,21 +203,18 @@
     var CharacteristicText = "ee5d2e57-3490-4c06-956b-5a384b1cbaa4";
     
     var BleId;
-    var vLines;
     
     function BlePageChanged(buffer)
     {
       var data = new Uint8Array(buffer);
       
-      vLines = 5;//data[2];
-      
-      // Update page number
-      vScreenIndex = data[0] + 1;
-      
       // Request full page data
-      if(data.length == 12)
+      if(vScreenIndex != data[0] + 1)
       {
-      app.setStatus("request full PageInfo");
+        // Update page number
+        vScreenIndex = data[0] + 1;
+      
+ //     app.setStatus("request full PageInfo");
         ble.read(vBleId, EccbService, CharacteristicPage, BlePageChanged, BleError);
       }
       else
@@ -227,8 +224,6 @@
         for (labelidx = 12; labelidx < data.length; labelidx++)
           if(data[labelidx] == 0)
             break;
-
-      app.setStatus("parse full PageInfo");
       
         // Get page effect and label
         if(labelidx == 12)  // No effect specified
@@ -241,8 +236,6 @@
         else
           vScreens[vScreenIndex - 1].name = String.fromCharCode.apply(null, new Uint8Array(buffer, labelidx + 1));
 
-      app.setStatus("request full PageText");
-        
         // Request page text lines
         ble.read(vBleId, EccbService, CharacteristicText, BleTextChanged, BleError);
       }
@@ -278,9 +271,6 @@
 
     function BleTextChange(pageidx, lineidx, textcfg, text, success, error)
     {
-      //var textcfg = "";
-      //var text = 
-      
       if(vBleId)
       {
         var d1 = String.fromCharCode.apply(null, new Uint8Array([pageidx, lineidx]));
@@ -301,6 +291,7 @@
     function BleError(error)
     {
       $('#ble-id').text("ERROR " + error);
+      app.setStatus("ERROR " + error);
     }
     
     $('#BluetoothConnectPopup').on('popupbeforeposition', function(event, ui)
