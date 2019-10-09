@@ -333,29 +333,27 @@
     
     BluetoothSave = function()
     {
-      app.setStatus("BluetoothSave " + vBleId);
       if(vBleId)
       {
-        var d1 = new ArrayBuffer(2);
+        var d1 = new ArrayBuffer(1);
         var d2 = new Uint8Array(d1);
         d2[0] = 0x11;
         
         // Request save data
-        ble.write(vBleId, EccbService, CharacteristicPage, d1, success, error);
+        ble.write(vBleId, EccbService, CharacteristicPage, d1, function(){}, BleError);
       }
     }
 
     BluetoothRefresh = function()
     {
-      app.setStatus("BluetoothRefresh " + vBleId);
       if(vBleId)
       {
-        var d1 = new ArrayBuffer(2);
+        var d1 = new ArrayBuffer(1);
         var d2 = new Uint8Array(d1);
         d2[0] = 0x10;
         
         // Request save data
-        ble.write(vBleId, EccbService, CharacteristicPage, d1, success, error);
+        ble.write(vBleId, EccbService, CharacteristicPage, d1, function(){}, BleError);
       }
     }
   </script>
