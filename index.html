@@ -231,12 +231,12 @@
         if(labelidx == data.length)
         {
           vScreens[vScreenIndex - 1].effect = "";
-          vScreens[vScreenIndex - 1].label = String.fromCharCode.apply(null, new Uint8Array(buffer, 12));
+          vScreens[vScreenIndex - 1].name = String.fromCharCode.apply(null, new Uint8Array(buffer, 12));
         }
         else
         {
           vScreens[vScreenIndex - 1].effect = String.fromCharCode.apply(null, new Uint8Array(buffer, 12, labelidx));
-          vScreens[vScreenIndex - 1].label = String.fromCharCode.apply(null, new Uint8Array(buffer, labelidx));
+          vScreens[vScreenIndex - 1].name = String.fromCharCode.apply(null, new Uint8Array(buffer, labelidx));
         }
       }
       
@@ -541,10 +541,10 @@
     
     // Create array of demo screens 
     var vScreens = new Array();
-    vScreens[0] = {'name':'Intro', 'duration':60, 'goto':0, 'lines':['intro text 1', 'intro text 2', 'intro text 3', 'intro text 4', 'intro text 5'], 'linecfg':[1, 3, 2, 3, 1]};
-    vScreens[1] = {'name':'Etulipa', 'duration':60, 'goto':0, 'lines':['E T U L I P A', 'presents', '', 'Electronic controlled', 'Copyboard'], 'linecfg':[128+3, 3, 3, 3, 3]};
-    vScreens[2] = {'name':'Page', 'duration':60, 'goto':0, 'lines':['', '', 'note that the first', 'line is preserved', 'from previous screen'], 'linecfg':[0, 1, 3, 3, 3]};
-    vScreens[3] = {'name':'Outro', 'duration':60, 'goto':0, 'lines':['outro text 1', 'outro text 2', 'outro text 3', 'outro text 4', 'outro text 5'], 'linecfg':[1, 2, 3, 2, 1]};
+    vScreens[0] = {'name':'Intro', 'effect':"RADAR,", 'duration':60, 'refresh':6 'goto':0, 'lines':['intro text 1', 'intro text 2', 'intro text 3', 'intro text 4', 'intro text 5'], 'linecfg':[1, 3, 2, 3, 1]};
+    vScreens[1] = {'name':'Etulipa', 'effect':"BUBBLE,", 'duration':60, 'refresh':6 'goto':0, 'lines':['E T U L I P A', 'presents', '', 'Electronic controlled', 'Copyboard'], 'linecfg':[128+3, 3, 3, 3, 3]};
+    vScreens[2] = {'name':'Page', 'effect':"RADAR,", 'duration':60, 'refresh':6 'goto':0, 'lines':['', '', 'note that the first', 'line is preserved', 'from previous screen'], 'linecfg':[0, 1, 3, 3, 3]};
+    vScreens[3] = {'name':'Outro', 'effect':"NONE,", 'duration':60, 'refresh':6 'goto':0, 'lines':['outro text 1', 'outro text 2', 'outro text 3', 'outro text 4', 'outro text 5'], 'linecfg':[1, 2, 3, 2, 1]};
 
     ScreenRefresh = function()
     {
