@@ -190,7 +190,7 @@
       <p>Scanning BLE devices in range</p>
       <p><span id="ble-id">.</span></p>
       <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" onclick="BluetoothConnectAbort();">Cancel</a>
-      <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow" onclick="BluetoothConnectExec();">Done</a>
+      <a href="#" id="BluetoothConnectButton" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b ui-state-disabled" data-transition="flow" onclick="BluetoothConnectExec();">Connect</a>
     </div>
   </div>
   <div data-role="popup" id="BluetoothDownloadPopup" data-theme="a" data-position-to="window" data-transition="pop" data-dismissible='false' class="ui-corner-all">
@@ -387,6 +387,7 @@
     $('#BluetoothConnectPopup').on('popupbeforeposition', function(event, ui)
     {
       console.log('BLE Scan');
+      $('#BluetoothConnectButton').addClass('ui-state-disabled');
 
       $('#hardware').text("?");
       $('#serial').text("?");
@@ -402,6 +403,7 @@
           {
             $('#ble-id').text(device.name + " (" + device.id + ")");
             vBleId = device.id;
+            $('#BluetoothConnectButton').removeClass('ui-state-disabled');
           }
         }, 
         BleError);
@@ -423,14 +425,18 @@
       if(typeof(ble) !== 'undefined')
       {
         ble.stopScan();
+        $('#ble-id').text("Connecting to " + device.name);
 
         ble.connect(vBleId, function()
         {
+          // Close the popup
+          $('#BluetoothConnectPopup').popup('close');
+
           // Issue read to get current status from device
           ble.read(vBleId, EccbService, CharDeviceInfo, BleDeviceInfo, BleError);
           
           // Issue read to get current status from device
-        //  ble.read(vBleId, EccbService, CharPageChange, BlePageChanged, BleError);
+          //ble.read(vBleId, EccbService, CharPageChange, BlePageChanged, BleError);
         
           // Subscribe to page-change notifications
           ble.startNotification(vBleId, EccbService, CharPageChange, BlePageNotified, BleError);
@@ -804,6 +810,7 @@
     
     LineConfigExec = function()
     {
+      var line = parseInt($('#LineConfigPopup span#no').text()) - 1;
       var linecfg = "";
       
       if($('#TextAlign-L').prop('checked'))
@@ -826,12 +833,12 @@
         linecfg += $('#TextScroll').val();
 
         linecfg += ","
-        if(vScreens[vScreenIndex-1].lines[parseInt($('#LineConfigPopup span#no').text())-1].split(",").length > 1)
-          linecfg += vScreens[vScreenIndex-1].lines[parseInt($('#LineConfigPopup span#no').text())-1].split(",")[1];
+        if(vScreens[vScreenIndex-1].lines[line].split(",").length > 1)
+          linecfg += vScreens[vScreenIndex-1].lines[line].split(",")[1];
       }
-      vScreens[vScreenIndex-1].lines[parseInt($('#LineConfigPopup span#no').text())-1] = linecfg;
+      vScreens[vScreenIndex-1].lines[line] = linecfg;
       ScreenUpdateLocal();
-      BleTextChange(vScreenIndex-1, no-1, text);
+      BleTextChange(vScreenIndex-1, line, text);
     }
   </script>
   <script>
