@@ -97,9 +97,11 @@
       {
         if($("body").pagecontainer("getActivePage").attr('id') == "content")
         {
-          ble.close(vBleId);
-          vBleId = "";
-          
+          if(vBleId)
+          {
+            ble.close(vBleId);
+            vBleId = "";
+          }          
           app.disconnect(true);
           navigator.app.exitApp();	// Android only
         }
@@ -200,48 +202,89 @@
     </div>
   </div>
   <script>
-    var EccbService = "36a0ca50-bb8f-4ce4-b0a3-6c79a49d533f";
-    var CharPageChange = "7223adac-65ff-4c32-b76a-31901df0a818";
-    var CharacteristicPage = "0d0a4662-2421-4fbd-90ab-a702ff0239b6";
-    var CharacteristicText = "ee5d2e57-3490-4c06-956b-5a384b1cbaa4";
+    const EccbService = "36a0ca50-bb8f-4ce4-b0a3-6c79a49d533f";
+    const CharDeviceInfo = "7223adac-65ff-4c32-b76a-51A02de0b828";
+    const CharPageChange = "7223adac-65ff-4c32-b76a-31901df0a818";
+    const CharacteristicPage = "0d0a4662-2421-4fbd-90ab-a702ff0239b6";
+    const CharacteristicText = "ee5d2e57-3490-4c06-956b-5a384b1cbaa4";
     
     var vBleId;
     
-    function BlePageChanged(buffer)
+    var vScreenIndex;
+    var vScreenWidth;
+    var vScreenHeight;
+    
+    function BleDeviceInfo(buffer)
+    {
+      var text = String.fromCharCode.apply(null, new Uint8Array(buffer));
+      text = text.split("\n");
+      for(var i = 0; i < text.length; i++)
+      {
+        switch(i)
+        {
+          case 0: $('#hardware').text(text[i]); break;
+          case 1: $('#serial').text(text[i]); break;
+          case 2: $('#bootloader').text(text[i]); break;
+          case 3: $('#firmware').text(text[i]); break;
+          case 4: $('#fpgaware').text('0.1'); break;
+        }
+      }
+    }
+    
+    function BlePageNotified(buffer)
     {
       var data = new Uint8Array(buffer);
       
       // Request full page data
-      if(data.length == 12)
+      if(data.length == 10)
       {
-        // Update page number
-        vScreenIndex = data[0] + 1;
-      
- //     app.setStatus("request full PageInfo");
-        ble.read(vBleId, EccbService, CharacteristicPage, BlePageChanged, BleError);
-      }
-      else
-      {
-        var labelidx;
-      
-        for (labelidx = 12; labelidx < data.length; labelidx++)
-          if(data[labelidx] == 0)
-            break;
-      
-        // Get page effect and label
-        if(labelidx == 12)  // No effect specified
-          vScreens[vScreenIndex - 1].effect = "";
-        else
-          vScreens[vScreenIndex - 1].effect = String.fromCharCode.apply(null, new Uint8Array(buffer, 12, labelidx - 12));
+        vScreenIndex = data[0] + 1;  // Update page number
+        //vScreenCount = data[1];
+        //TODO invalidate non existing pages in local data
         
-        if(labelidx == data.length)
-          vScreens[vScreenIndex - 1].name = "";
-        else
-          vScreens[vScreenIndex - 1].name = String.fromCharCode.apply(null, new Uint8Array(buffer, labelidx + 1));
-
-        // Request page text lines
-        ble.read(vBleId, EccbService, CharacteristicText, BleTextChanged, BleError);
+        //vScreenCountMax = data[2];
+        vScreenWidth = (data[7] & 0x7F) * 256 + data[6];
+        vScreenHeight = (data[9] & 0x7F) * 256 + data[8];
+        $('#DisplaySize').text(vScreenWidth + "x" + vScreenHeight)
       }
+      ble.read(vBleId, EccbService, CharacteristicPage, BlePageChanged, BleError);
+    }
+    
+    function BlePageChanged(buffer)
+    {
+      var data = new Uint8Array(buffer);
+      var page, idx;
+
+      if(data.length < 10)
+        return;
+        
+      page = data[0];  // Update page number
+      vScreens[page].duration = data[3] * 256 + data[2];
+      vScreens[page].refresh = data[5] * 256 + data[4];
+      idx = data[9];
+      idx = idx * 256 + data[8];
+      idx = idx * 256 + data[7];
+      idx = idx * 256 + data[6];
+      vScreens[page].alarm = idx;
+      vScreens[page].goto = data[10];
+    
+      for (idx = 12; idx < data.length; idx++)
+        if(data[idx] == 0)
+          break;
+    
+      // Get page effect and label
+      if(idx == 12)  // No effect specified
+        vScreens[page].effect = "";
+      else
+        vScreens[page].effect = String.fromCharCode.apply(null, new Uint8Array(buffer, 12, idx - 12));
+      
+      if(idx == data.length)
+        vScreens[page].name = "";
+      else
+        vScreens[vScreenIndex - 1].name = String.fromCharCode.apply(null, new Uint8Array(buffer, idx + 1));
+
+      // Request page text lines
+      ble.read(vBleId, EccbService, CharacteristicText, BleTextChanged, BleError);
     }
 
     function BlePageChange(page, success, error)
@@ -291,6 +334,47 @@
         error();
     }
     
+    function BlePageConfig(page, success, error)
+    {
+      if(vBleId)
+      {
+        var i = vScreenIndex - 1;
+        var buf = new ArrayBuffer(12 + vScreens[i].effect + 1 + vScreens[i].name);
+        var data = new Uint8Array(buf);
+        var t, len;
+        
+        data[0] = 0x30;
+        data[1] = i;
+        t = vScreens[i].duration;
+        data[2] = t % 256; t /= 256;
+        data[3] = t % 256; t /= 256;
+        t = vScreens[i].refresh;
+        data[4] = t % 256; t /= 256;
+        data[5] = t % 256; t /= 256;
+        t = vScreens[i].alarm;
+        data[6] = t % 256; t /= 256;
+        data[7] = t % 256; t /= 256;
+        data[8] = t % 256; t /= 256;
+        data[9] = t % 256; t /= 256;
+        data[10] = vScreens[i].goto;
+        data[11] = 0; // rsvd
+        len = 12;
+
+        for (var t = 0; t < vScreens[i].effect.length; t++)
+          data[len++] = vScreens[i].effect.charCodeAt(t);
+          
+        data[len++] = 0;
+
+        for (var t = 0; t < vScreens[i].name.length; t++)
+          data[len++] = vScreens[i].name.charCodeAt(t);
+
+        // Send page configuration
+        ble.write(vBleId, EccbService, CharacteristicPage, d1, success, error);
+      }
+      else if(typeof(error) === 'function')
+        error();
+    }
+        
     function BleError(error)
     {
       $('#ble-id').text("ERROR " + error);
@@ -300,7 +384,13 @@
     $('#BluetoothConnectPopup').on('popupbeforeposition', function(event, ui)
     {
       console.log('BLE Scan');
-      //ble.startScan([EccbService], function(device)
+
+      $('#hardware').text("?");
+      $('#serial').text("?");
+      $('#bootloader').text("?");
+      $('#firmware').text("?");
+      $('#fpgaware').text("?");
+      
       ble.startScan([], function(device)
       {
         if(device.id.slice(0, 11) === "03:80:E1:00")
@@ -326,10 +416,13 @@
       ble.connect(vBleId, function()
       {
         // Issue read to get current status from device
+        ble.read(vBleId, EccbService, CharDeviceInfo, BleDeviceInfo, BleError);
+        
+        // Issue read to get current status from device
         ble.read(vBleId, EccbService, CharPageChange, BlePageChanged, BleError);
       
         // Subscribe to page-change notifications
-        ble.startNotification(vBleId, EccbService, CharPageChange, BlePageChanged, BleError);
+        ble.startNotification(vBleId, EccbService, CharPageChange, BlePageNotified, BleError);
         
         // Send time and date to device
         var d1 = new ArrayBuffer(5);
@@ -376,13 +469,14 @@
     <a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>
     <div role="main" class="ui-content">
       <h3>System information</h3>
-      <p>Display configuration: <span>24 x 5 chars</span></p>
+      <p>Display configuration: <span id="DisplaySize">? x ?</span>chars</p>
       <p>Display controller</p>
       <ul>
-        <li>hardware model: <span id='hardware'></span></li>
-        <li>serial no: <span id='serial'></span></li>
-        <li>FPGA version: <span id='fpgaware'></span></li>
-        <li>software version: <span id='firmware'></span></li>
+        <li>hardware model: <span id='hardware'>?</span></li>
+        <li>serial no: <span id='serial'>?</span></li>
+        <li>bootloader: <span id='bootloader'>?</span></li>
+        <li>software version: <span id='firmware'>?</span></li>
+        <li>FPGA version: <span id='fpgaware'>?</span></li>
       </ul>
       <p>App version: <span id='versionapp'>0</span></p>
     </div>
@@ -390,15 +484,12 @@
   <script>
     $('#SystemInfoPopup').on('popupbeforeposition', function(event, ui)
     {
-      $('#hardware').text('M077PL016A');
-      $('#serial').text('12345678');
-      $('#fpgaware').text('0.1');
-      $('#firmware').text('0.0.0.0 (1/1/2019)');
-      
       try
       {
         cordova.getAppVersion.getVersionNumber(function(version)
         {
+          app.setStatus(version);
+
           //$('#versionapp').text(version);
           document.getElementById("versionapp").innerText = version;
         });
@@ -508,21 +599,28 @@
   <div data-role="popup" id="ScreenConfigPopup" data-theme="a" data-transition="pop" data-position-to="window" class="ui-corner-all">
     <div role="main" class="ui-content">
       <h3>Parameters for this page</h3>
+      <table><tr><td>
+        <label for="ScreenName">Label</label>
+        <input id="ScreenName" type="text" data-mini="true" value="x" />
+      </td><td>
+        <label for="ScreenDuration">Duration</label>
+        <input id="ScreenDuration" type="number" data-mini="true" value="0" />
+      </td></tr>
+      <tr><td>
+        <label for="ScreenEffect">Effect</label>
+        <select id="ScreenEffect" data-mini="true" data-native-menu="false"><option value="NONE,">None</option><option value="RADAR,">Radar</option><option value="BUBBLE,">Bubble</option></select>
+      </td><td>
+        <label for="ScreenRefresh">Refresh</label>
+        <input id="ScreenRefresh" type="number" data-mini="true" value="0" />
+      </td></tr>
+      <tr><td>
+        <label for="ScreenAlarm">Alarm</label>
+        <input id="ScreenAlarm" type="datetime-local" data-mini="true" value="" />
+      </td><td>
+        <label for="ScreenGoto">Refresh</label>
+        <input id="ScreenGoto" type="number" data-mini="true" value="" />
+      </td></tr></table>
       
-      <label for="ScreenName">Duration</label>
-      <input id="ScreenName" type="text" data-mini="true" value="x" />
-      <label for="ScreenDuration">Duration</label>
-      <input id="ScreenDuration" type="number" data-mini="true" value="0" />
-      
-      <label for="ScreenEffect">Effect</label>
-      <select id="ScreenEffect" data-mini="true" data-native-menu="false"><option value="NONE,">None</option><option value="RADAR,">Radar</option><option value="BUBBLE,">Bubble</option></select>
-      <label for="ScreenRefresh">Refresh</label>
-      <input id="ScreenRefresh" type="number" data-mini="true" value="0" />
-
-      <label for="ScreenAlarm">Alarm</label>
-      <input id="ScreenAlarm" type="datetime-local" data-mini="true" value="" />
-      
-      <p>TODO Add GOTO mode to jump to non-sequential screen</p>
       <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Cancel</a>
       <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow" onclick="ScreenConfigExec();">Done</a>
     </div>
@@ -542,6 +640,8 @@
       vScreens[vScreenIndex - 1].effect = $('#ScreenEffect').val();
       vScreens[vScreenIndex - 1].duration = $('#ScreenDuration').val();
       vScreens[vScreenIndex - 1].refresh = $('#ScreenRefresh').val(); 
+      
+      BlePageConfig();
       ScreenUpdateLocal();
     }
   </script>
@@ -561,37 +661,81 @@
     }
   </script>
 
+  <div data-role="popup" id="AddPagePopup" data-theme="a" data-transition="pop" data-position-to="window" class="ui-corner-all">
+    <div role="main" class="ui-content">
+      <h3>Add page?</h3>
+      <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">No</a>
+      <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow" onclick="AddPageExec();">Yes</a>
+    </div>
+  </div>
+  <script>
+    AddPageExec = function()
+    {
+      vScreens[vScreenIndex] = 
+      {
+        'name':'Page ' + (vScreenIndex + 1),
+        'effect': vScreens[vScreenIndex-1].effect,
+        'duration': vScreens[vScreenIndex-1].duration,
+        'refresh': vScreens[vScreenIndex-1].refresh,
+        'goto':0, 'lines':['C,', 'C,', 'C,', 'C,', 'C,']
+      };
+      vScreenIndex++;
+      BlePageChange(vScreenIndex - 1, function(){}, function(){ScreenUpdateLocal();});
+    }
+  </script>
+
   <div data-role="popup" id="LineConfigPopup" data-theme="a" data-transition="pop" data-position-to="window" class="ui-corner-all">
     <div role="main" class="ui-content">
       <h3>Parameters for text line <span id="no">N</span></h3>
       
-      <select id="TextAlign" data-mini="true" data-native-menu="false"><option value="">Keep previous text</option><option value="L">Left aligned</option><option value="C">Center aligned</option><option value="R">Right aligned</option></select>
+      <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
+        <legend>Text alignment</legend>
+        <input type="radio" name="TextAlign" id="TextAlign-L" value="L" />
+        <label for="TextAlign-L">Left</label>
+        <input type="radio" name="TextAlign" id="TextAlign-C" value="C" />
+        <label for="TextAlign-C">Center</label>
+        <input type="radio" name="TextAlign" id="TextAlign-R" value="R" />
+        <label for="TextAlign-R">Right</label>
+      </fieldset>
       
       <select id="TextScroll" data-mini="true" data-native-menu="false"><option value="">Static text</option><option value="SL">Scroll R>L</option><option value="SR,">Scroll L>R</option><option value="TL">Ticker R>L</option><option value="TR">Ticker L>R</option></select>
       
       <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
-      <label for="TextBold">Bold text</label>
-      <input id="TextBold" type="checkbox" data-role="flipswitch" data-on-text="Bold" data-off-text="Normal" data-wrapper-class="custom-size-flipswitch" />
+        <label for="TextBold">Bold text</label>
+        <input id="TextBold" type="checkbox" data-role="flipswitch" data-on-text="Bold" data-off-text="Normal" data-wrapper-class="custom-size-flipswitch" />
 
-      <label for="ParseDate">Parse date/time</label>
-      <input id="ParseDate" type="checkbox" data-role="flipswitch" data-on-text="Parse h:m:s" data-off-text="h:m:s as text" data-wrapper-class="custom-size-flipswitch" />
-  </fieldset>
+        <label for="ParseDate">Parse date/time</label>
+        <input id="ParseDate" type="checkbox" data-role="flipswitch" data-on-text="Parse h:m:s" data-off-text="h:m:s as text" data-wrapper-class="custom-size-flipswitch" />
+      </fieldset>
 
       <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Cancel</a>
       <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow" onclick="LineConfigExec();">Done</a>
     </div>
   </div>
   <script>
+    $('#LineConfigPopup').on('popupcreate', function(event, ui)
+    {
+      $('#TextAlign-L').parent().css('width', '33%');
+      $('#TextAlign-C').parent().css('width', '33%');
+      $('#TextAlign-R').parent().css('width', '33%');
+      $('#TextAlign-L').prev().css('text-align','left');
+      $('#TextAlign-C').prev().css('text-align','center');
+      $('#TextAlign-R').prev().css('text-align','right');
+    });
+    
     $('#LineConfigPopup').on('popupbeforeposition', function(event, ui)
     {
       var line = vScreens[vScreenIndex-1].lines[parseInt($('#LineConfigPopup span#no').text())-1].split(",")[0];
 
-      $('#TextAlign').val("M");
+      $('#TextAlign-L').prop('checked', false);
+      $('#TextAlign-C').prop('checked', false);
+      $('#TextAlign-R').prop('checked', false);
+
       $('#TextScroll').val("");
 
       $('#TextBold').prop("checked", false);
       $('#ParseDate').prop("checked", false);
-      
+
       for(var j = 0; j < line.length; j++)
       {
         switch(line[j])
@@ -612,9 +756,13 @@
           break;
 
           case 'L': // Left aligned
+            $('#TextAlign-L').prop('checked', true);
+          break;
           case 'C': // Center aligned
+            $('#TextAlign-C').prop('checked', true);
+          break;
           case 'R': // Right aligned
-            $('#TextAlign').val(line[j]).selectmenu('refresh');
+            $('#TextAlign-R').prop('checked', true);
           break;
           
           case ' ':
@@ -625,7 +773,9 @@
           break;
         }
       }
-      $('#TextAlign').selectmenu('refresh');
+      $('#TextAlign-L').checkboxradio('refresh');
+      $('#TextAlign-C').checkboxradio('refresh');
+      $('#TextAlign-R').checkboxradio('refresh');
       $('#TextScroll').selectmenu('refresh');
       
       if($('#TextBold').prop('checked'))
@@ -657,7 +807,8 @@
         linecfg += $('#TextScroll').val();
 
         linecfg += ","
-        linecfg += vScreens[vScreenIndex-1].lines[parseInt($('#LineConfigPopup span#no').text())-1].split(",")[1];
+        if(vScreens[vScreenIndex-1].lines[parseInt($('#LineConfigPopup span#no').text())-1].split(",").length > 1)
+          linecfg += vScreens[vScreenIndex-1].lines[parseInt($('#LineConfigPopup span#no').text())-1].split(",")[1];
       }
       vScreens[vScreenIndex-1].lines[parseInt($('#LineConfigPopup span#no').text())-1] = linecfg;
       ScreenUpdateLocal();
@@ -671,8 +822,10 @@
     }
     lineUpdate = function(no)
     {
-      var text = vScreens[vScreenIndex-1].lines[no-1].split(",")[0] + ",";
-      text += $('#screenText tr:nth-child(' + no + ') input').val();
+      var text = vScreens[vScreenIndex-1].lines[no-1].split(",")[0];
+      if(text.length == 0)
+        text += "C";  //  Default feature is center-aligned
+      text += "," + $('#screenText tr:nth-child(' + no + ') input').val();
       vScreens[vScreenIndex-1].lines[no-1] = text;
       BleTextChange(vScreenIndex-1, no-1, text);
     }
@@ -682,11 +835,11 @@
     var vScreenIndex = 1;
     
     // Create array of demo screens 
-    // L=Left,M=Middle,R=Right,B=Bold,P=Parsers
+    // L=Left,C=Middle,R=Right,B=Bold,P=Parsers
     // S=Scroll,T=Ticker
     var vScreens = new Array();
     vScreens[0] = {'name':'Intro', 'effect':'RADAR,', 'duration':60, 'refresh':6, 'goto':0, 'lines':['L,intro text 1', 'CBP,intro text 2', 'R,intro text 3', 'C,intro text 4', 'L,intro text 5']};
-    vScreens[1] = {'name':'Etulipa', 'effect':'BUBBLE,', 'duration':60, 'refresh':6, 'goto':0, 'lines':['CB,E T U L I P A', 'CT,presents', '', 'CT,Electronic controlled', 'CT,Copyboard']};
+    vScreens[1] = {'name':'Etulipa', 'effect':'BUBBLE,', 'duration':60, 'refresh':6, 'goto':0, 'lines':['CB,E T U L I P A', 'CT,presents', 'C,', 'CT,Electronic controlled', 'CT,Copyboard']};
     vScreens[2] = {'name':'Page', 'effect':'RADAR,', 'duration':60, 'refresh':6, 'goto':0, 'lines':['', 'L,', 'L,note that the first', 'C,line is preserved', 'R,from previous screen']};
     vScreens[3] = {'name':'Outro', 'effect':'NONE,', 'duration':60, 'refresh':6, 'goto':0, 'lines':['L,outro text 1', 'C,outro text 2', 'R,outro text 3', 'R,outro text 4', 'R,outro text 5']};
 
@@ -699,7 +852,7 @@
     {
       // Update screen number indicator and label
       $('#screenIndex').val(vScreenIndex + "/" + vScreens.length).button('refresh');
-      $('#screenName').val(vScreens[vScreenIndex - 1].name);//.button('refresh');
+      $('#screenName').val(vScreens[vScreenIndex - 1].name);
       
       // Retrieve screen data from currently selected screen
       for(i = 0; i < vScreens[vScreenIndex - 1].lines.length; i++)
@@ -707,10 +860,16 @@
         var line = $('#screenText tr:nth-child(' + (i + 1) + ') input');
         var split = vScreens[vScreenIndex - 1].lines[i].split(",");
         
+        // Set placeholder on line inputbox
+        line.attr('placeholder', 'Keep previous text');
+        
         if(split.length >= 2)
         {
           line.val(split[1]);
-
+          // Remove placeholder
+          if(split[0].length != 0)
+            line.attr('placeholder', '');
+          
           line.css('font-weight', '');
 
           for(var j = 0; j < split[0].length; j++)
@@ -766,7 +925,14 @@
       {
         // Select next screen or ask to add new screen
         if(vScreenIndex < vScreens.length)
+        {
           vScreenIndex++;
+        }
+        else
+        {
+          $('#AddPagePopup').popup('open');
+          return;
+        }
       }
       else
       {
