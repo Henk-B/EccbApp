@@ -843,6 +843,7 @@
           linecfg += " ";
     
         linecfg += $('#TextScroll').val();
+        linecfg = linecfg.trim();
 
         linecfg += ","
         if(vScreens[vScreenIndex-1].lines[line].split(",").length > 1)
@@ -850,7 +851,7 @@
       }
       vScreens[vScreenIndex-1].lines[line] = linecfg;
       ScreenUpdateLocal();
-      BleTextChange(vScreenIndex-1, line, text);
+      BleTextChange(vScreenIndex-1, line, linecfg);
     }
   </script>
   <script>
