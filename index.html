@@ -242,7 +242,15 @@
       {
         vScreenIndex = data[0] + 1;  // Update page number
         //vScreenCount = data[1];
-        //TODO invalidate non existing pages in local data
+        
+        // Add missing pages
+        for(var i = 0; i < vScreenIndex; i++)
+          if(typeof(vScreens[i]) !== 'object')
+            vScreens[i] = {'name':'', 'effect':'', 'duration':60, 'refresh':6, 'goto':0, 'lines':['', '', '', '', '']};
+
+        // Invalidate non existing pages in local data
+        while(vScreens.length > data[1])
+          vScreens.pop();
         
         //vScreenCountMax = data[2];
         vScreenWidth = (data[7] & 0x7F) * 256 + data[6];
