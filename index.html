@@ -154,7 +154,7 @@
     <a id="SysInfo" href="#SystemInfoPopup" class="ui-icon-info ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" data-rel="popup">System info</a>
   </td></tr></table>
 
-  <div data-role="popup" id="LocalSavePopup" data-theme="a" data-position-to="window" data-transition="pop" class="ui-corner-all">
+  <div data-role="popup" id="LocalSavePopup" data-theme="a" data-position-to="window" data-transition="pop" data-dismissible='false' class="ui-corner-all">
     <div role="main" class="ui-content">
       <h3>Save display configuration</h3>
       <p>TODO Set filename and dump data to local storage</p>
@@ -169,7 +169,7 @@
     }
   </script>
 
-  <div data-role="popup" id="LocalOpenPopup" data-theme="a" data-position-to="window" data-transition="pop" class="ui-corner-all">
+  <div data-role="popup" id="LocalOpenPopup" data-theme="a" data-position-to="window" data-transition="pop" data-dismissible='false' class="ui-corner-all">
     <div role="main" class="ui-content">
       <h3>Load display configuration</h3>
       <p>TODO List files available in local storage</p>
@@ -184,7 +184,7 @@
     }
   </script>
 
-  <div data-role="popup" id="BluetoothConnectPopup" data-theme="a" data-position-to="window" data-transition="pop" class="ui-corner-all">
+  <div data-role="popup" id="BluetoothConnectPopup" data-theme="a" data-position-to="window" data-transition="pop" data-dismissible='false' class="ui-corner-all">
     <div role="main" class="ui-content">
       <h3>Bluetooth connect</h3>
       <p>Scanning BLE devices in range</p>
@@ -193,7 +193,7 @@
       <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow" onclick="BluetoothConnectExec();">Done</a>
     </div>
   </div>
-  <div data-role="popup" id="BluetoothDownloadPopup" data-theme="a" data-position-to="window" data-transition="pop" class="ui-corner-all">
+  <div data-role="popup" id="BluetoothDownloadPopup" data-theme="a" data-position-to="window" data-transition="pop" data-dismissible='false' class="ui-corner-all">
     <div role="main" class="ui-content">
       <h3>Download content from display?</h3>
       <p></p>
@@ -247,7 +247,7 @@
         //vScreenCountMax = data[2];
         vScreenWidth = (data[7] & 0x7F) * 256 + data[6];
         vScreenHeight = (data[9] & 0x7F) * 256 + data[8];
-        $('#DisplaySize').text(vScreenWidth + "x" + vScreenHeight)
+        $('#DisplaySize').html(vScreenWidth + "&times;" + vScreenHeight)
       }
       ble.read(vBleId, EccbService, CharacteristicPage, BlePageChanged, BleError);
     }
@@ -393,51 +393,60 @@
       $('#firmware').text("?");
       $('#fpgaware').text("?");
       
-      ble.startScan([], function(device)
+      if(typeof(ble) !== 'undefined')
       {
-        if(device.id.slice(0, 11) === "03:80:E1:00")
+        ble.startScan([], function(device)
         {
-          $('#ble-id').text(device.name + " (" + device.id + ")");
-          vBleId = device.id;
-        }
-      }, 
-      BleError);
+          if(device.id.slice(0, 11) === "03:80:E1:00")
+          {
+            $('#ble-id').text(device.name + " (" + device.id + ")");
+            vBleId = device.id;
+          }
+        }, 
+        BleError);
+      }
     });
     
     BluetoothConnectAbort = function()
     {
       console.log('BluetoothConnectAbort');
-      ble.stopScan();
+      if(typeof(ble) !== 'undefined')
+      {
+        ble.stopScan();
+      }
     }
     
     BluetoothConnectExec = function()
     {
       console.log('BluetoothConnectExec');
-      ble.stopScan();
-
-      ble.connect(vBleId, function()
+      if(typeof(ble) !== 'undefined')
       {
-        // Issue read to get current status from device
-        ble.read(vBleId, EccbService, CharDeviceInfo, BleDeviceInfo, BleError);
+        ble.stopScan();
+
+        ble.connect(vBleId, function()
+        {
+          // Issue read to get current status from device
+          ble.read(vBleId, EccbService, CharDeviceInfo, BleDeviceInfo, BleError);
+          
+          // Issue read to get current status from device
+        //  ble.read(vBleId, EccbService, CharPageChange, BlePageChanged, BleError);
         
-        // Issue read to get current status from device
-        ble.read(vBleId, EccbService, CharPageChange, BlePageChanged, BleError);
-      
-        // Subscribe to page-change notifications
-        ble.startNotification(vBleId, EccbService, CharPageChange, BlePageNotified, BleError);
-        
-        // Send time and date to device
-        var d1 = new ArrayBuffer(5);
-        var d2 = new Uint8Array(d1);
-        d2[0] = 0x20;
-        var time = Date.now() / 1000 | 0;
-        d2[1] = time % 256; time / 256;
-        d2[2] = time % 256; time / 256;
-        d2[3] = time % 256; time / 256;
-        d2[4] = time % 256; time / 256;
-        ble.write(vBleId, EccbService, CharacteristicPage, d1, function(){}, BleError);
-      },
-      BleError);
+          // Subscribe to page-change notifications
+          ble.startNotification(vBleId, EccbService, CharPageChange, BlePageNotified, BleError);
+          
+          // Send time and date to device
+          var d1 = new ArrayBuffer(5);
+          var d2 = new Uint8Array(d1);
+          d2[0] = 0x20;
+          var time = Date.now() / 1000 | 0;
+          d2[1] = time % 256; time / 256;
+          d2[2] = time % 256; time / 256;
+          d2[3] = time % 256; time / 256;
+          d2[4] = time % 256; time / 256;
+          ble.write(vBleId, EccbService, CharacteristicPage, d1, function(){}, BleError);
+        },
+        BleError);
+      }
     }
     
     BluetoothSave = function()
@@ -467,12 +476,12 @@
     }
   </script>
 
-  <div data-role="popup" id="SystemInfoPopup" data-theme="a" data-position-to="window" data-transition="pop" class="ui-corner-all">
+  <div data-role="popup" id="SystemInfoPopup" data-theme="a" data-position-to="window" data-transition="pop" data-dismissible='false' class="ui-corner-all">
     <a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>
     <div role="main" class="ui-content">
       <h3>System information</h3>
-      <p>Display configuration: <span id="DisplaySize">? x ?</span>chars</p>
-      <p>Display controller</p>
+      <p>Display configuration: <span id="DisplaySize">?x?</span> chars</p>
+      <p>Display controller;</p>
       <ul>
         <li>hardware model: <span id='hardware'>?</span></li>
         <li>serial no: <span id='serial'>?</span></li>
@@ -480,44 +489,24 @@
         <li>software version: <span id='firmware'>?</span></li>
         <li>FPGA version: <span id='fpgaware'>?</span></li>
       </ul>
-      <p>App version: <span id='versionapp'>0</span></p>
+      <p>App version: <span id='appversion'>0</span></p>
     </div>
   </div>
   <script>
-    $(document).ready(function()
-    {
-      //app.enable(update-cpu);
-
-      $(document).on("pagecontainerchange", function(event, ui)
-      {
-        if($("body").pagecontainer("getActivePage").attr('id') == "content")
-        {
-          app.setStatus("try cordova.getAppVersion.getVersionNumber");
-          cordova.getAppVersion.getVersionNumber(function (version)
-          {
-            app.setStatus("cordova.getAppVersion.getVersionNumber " + version);
-            document.getElementById("versionapp").innerText = version;
-          });
-        }
-      });
-    });
-  
     $('#SystemInfoPopup').on('popupbeforeposition', function(event, ui)
     {
       try
       {
         cordova.getAppVersion.getVersionNumber(function(version)
         {
-            app.setStatus("cordova.getAppVersion.getVersionNumber " + version);
-
-          //$('#versionapp').text(version);
-          document.getElementById("versionapp").innerText = version;
+          app.setStatus("cordova.getAppVersion.getVersionNumber " + version);
+          $('#appversion').text(version);
         });
       }
       catch(e)
       {
         if(typeof(AppVersion) != 'undefined')
-          $('#versionapp').text(AppVersion.version);
+          $('#appversion').text(AppVersion.version);
       }
     });
   </script>
@@ -586,7 +575,7 @@
 <style>
   input.eccb {font-size: 125% !important; font-family: monospace;}
 </style>
-<div data-role="page" id="content" data-title="ECCB" data-prev="#bluetooth" data-next="#about" class="ui-page-theme-a">
+<div data-role="page" id="content" data-title="ECCB" data-prev="#splash" class="ui-page-theme-a">
 
   <table style="white-space:nowrap;"><tr>
     <td style="text-align:left;">
@@ -614,7 +603,10 @@
     <tr id="line5"><td><input type="text" class="eccb" data-mini="true" value="" onchange="lineUpdate(5);" /></td>
       <td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="lineConfig(5);"></a></td></tr>
   </tr></table>
+
+  <div data-role="footer" data-position="fixed" data-tap-toggle="false">
     <div class="statusMessage">&nbsp;</div>
+  </div>
 
   <div data-role="popup" id="ScreenConfigPopup" data-theme="a" data-transition="pop" data-position-to="window" class="ui-corner-all">
     <div role="main" class="ui-content">
@@ -666,7 +658,7 @@
     }
   </script>
 
-  <div data-role="popup" id="ScreenArrangePopup" data-theme="a" data-transition="pop" data-position-to="window" class="ui-corner-all">
+  <div data-role="popup" id="ScreenArrangePopup" data-theme="a" data-transition="pop" data-position-to="window" data-dismissible='false' class="ui-corner-all">
     <div role="main" class="ui-content">
       <h3>Arrange page</h3>
       <p>TODO Mechanism to rearrange screen to other position</p>
@@ -681,7 +673,7 @@
     }
   </script>
 
-  <div data-role="popup" id="AddPagePopup" data-theme="a" data-transition="pop" data-position-to="window" class="ui-corner-all">
+  <div data-role="popup" id="AddPagePopup" data-theme="a" data-transition="pop" data-position-to="window" data-dismissible='false' class="ui-corner-all">
     <div role="main" class="ui-content">
       <h3>Add page?</h3>
       <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">No</a>
@@ -704,7 +696,7 @@
     }
   </script>
 
-  <div data-role="popup" id="LineConfigPopup" data-theme="a" data-transition="pop" data-position-to="window" class="ui-corner-all">
+  <div data-role="popup" id="LineConfigPopup" data-theme="a" data-transition="pop" data-position-to="window" data-dismissible='false' class="ui-corner-all">
     <div role="main" class="ui-content">
       <h3>Parameters for text line <span id="no">N</span></h3>
       
@@ -847,6 +839,7 @@
       $('#LineConfigPopup span#no').text(no);
       $('#LineConfigPopup').popup('open');
     }
+    
     lineUpdate = function(no)
     {
       var text = vScreens[vScreenIndex-1].lines[no-1].split(",")[0];
@@ -888,11 +881,13 @@
         var split = vScreens[vScreenIndex - 1].lines[i].split(",");
         
         // Set placeholder on line inputbox
-        line.attr('placeholder', 'Keep previous text');
+        line.attr('placeholder', 'keep previous text');
         
         if(split.length >= 2)
         {
-          line.val(split[1]);
+          split[0] = split[0].trim();
+          line.val(split.slice(1).join(','));
+          
           // Remove placeholder
           if(split[0].length != 0)
             line.attr('placeholder', '');
@@ -987,209 +982,15 @@
     });
   </script>
 
-  <script type="text/javascript">
-    $(document).ready(function()
-    {
-//      window.setInterval(function () {app.pollWeight()}, 1000);
-    });
-  </script>
-</div>
-
-
-<div data-role="page" id="bluetooth" data-title="BLUETOOTH" data-next="#content" class="ui-page-theme-a">
-  <fieldset data-role="controlgroup">
-    <label for="deviceList">Device:</label>
-    <select name="deviceList "id="deviceList">
-      <option value="0">...</option>
-    </select>
-  </fieldset>
-  
-  <fieldset data-role="controlgroup">
-    <a href="#" id="connectButton" data-role="button" class="ui-state-disabled">Connect</a>
-    <a href="#" id="disconnectBtn" data-role="button" class="ui-state-disabled">Disconnect</a>
-    <a href="#" id="listButton" data-role="button">List Devices</a>
-  </fieldset>
-  
-  <fieldset data-role="controlgroup">
-    <a href="#" id="connectQrButton" data-role="button">Connect with QR code</a>
-    <a href="#" id="connectQrButton2" data-role="button" onclick="btConnectQR();">Connect with QR code</a>
-  </fieldset>
-
-  <div data-role="footer" data-position="fixed" data-tap-toggle="false">
-    <div class="statusMessage">&nbsp;</div>
-  </div>
-
-  <script type="text/javascript">
-    $(document).ready(function()
-    {
-      $(document).on("pagecontainerchange", function( event, ui )
-      {
-        if($("body").pagecontainer("getActivePage").attr('id') == "bluetooth")
-        {
-        /*
-          deviceList.innerHTML = "";
-          //app.disable(sendBluetooth);
-
-          bluetoothSerial.list(btResults, btFail);
-          
-          var btFail = function()
-          {
-            app.setStatus("Bluetooth failure...");
-          };
-          
-          var btResult = function(device)
-          {
-            var option = $('#deviceList option[value="' + device.address + '"]');
-            if(option.length <= 0)
-            {
-              app.setStatus("Add " + device.name + " (" + device.address + " " + device.class + ")");
-              option = document.createElement('option');
-              
-              if(device.class == 768)
-              {
-                deviceList.insertBefore(option, deviceList.childNodes[0]);
-                if(deviceList.val() === 'undefined')
-                  deviceList.val(0);
-              }
-              else
-                deviceList.appendChild(option);
-            }
-            option.value = device.address;
-            option.innerHTML = device.name + " (" + device.address + ")";
-
-            if($('#deviceList').selectmenu('instance') !== undefined)
-              $('#deviceList').selectmenu('refresh');
-          };
-          
-          var btResults = function(devices)
-          {
-            //app.setStatus("Parse results");
-            devices.forEach(function(device)
-            {
-              btResult(device);
-            });
-          };
-          */
-        }
-      });
-    });
-
-    btConnectQR = function()
-    {
-      cordova.plugins.barcodeScanner.scan(function(result)
-      {
-        if(!result.cancelled)
-          app.connect2("Anonymous via QR", result.text);
-      });
-    }
-  
-  </script></div>
-
-
-<div data-role="page" id="about" data-title="ABOUT" data-prev="#content" data-next="#splash" class="ui-page-theme-a">
-  <div id="logo" class="dezaag_logo"><p>Load Monitor</p></div>
-  <div>
-    <p>LoadMonitor B.V.<br>Postbus 7239<br>3280AA Numansdorp<br>The Netherlands</p>
-  </div>
-  
-  <fieldset data-role="collapsible">
-    <h3><span id="versionapp">App version</span></h3>
-  </fieldset>
-
-  <fieldset data-role="collapsible">
-    <h3><span id="versioncpu">CPU version</span></h3>
-    <a href="#" data-role="button" id="updatecpu" class="ui-state-disabled" onclick="FirmwareSend(0, this.path);"><span>...</span></a>
-  </fieldset>
-
-  <fieldset data-role="collapsible">
-    <h3 class="ui-btn-icon-right ui-icon-star"><span id="versiontft">Display version</span></h3>
-    <a href="#" data-role="button" id="updatetft" class="ui-state-disabled" onclick="FirmwareSend(1, this.path);"><span>...</span></a>
-  </fieldset>
-    
-  <div id="version"></div>
-  <script type="text/javascript">
-    $(document).ready(function()
-    {
-      //app.enable(update-cpu);
-
-      $(document).on("pagecontainerchange", function(event, ui)
-      {
-        if($("body").pagecontainer("getActivePage").attr('id') == "about")
-        {
-          app.setStatus("try cordova.getAppVersion.getVersionNumber");
-          cordova.getAppVersion.getVersionNumber(function (version)
-          {
-            app.setStatus("cordova.getAppVersion.getVersionNumber " + version);
-            document.getElementById("versionapp").innerText = "App version " + version;
-          });
-
-          function listDir(path)
-          {
-            window.resolveLocalFileSystemURL(path, function(fileSystem)
-            {
-              var reader = fileSystem.createReader();
-              reader.readEntries(function(entries)
-              {
-                entries.forEach(function(entry)
-                {
-                  //document.getElementById("version").innerHTML += "<br>" + entry.name;
-                  if(entry.name.indexOf("77-067-103") != -1)
-                  {
-                    $(updatecpu).children().first().text(entry.name);
-                    $(updatecpu).attr('path', entry.fullPath);
-                    $(versioncpu).closest('h3').addClass('ui-btn-icon-right ui-icon-star');
-                    $(updatecpu).removeClass('ui-state-disabled');
-                  }
-                  else if(entry.name.indexOf("77-067-107") != -1)
-                  {
-                    $(updatetft).children().first().text(entry.name);
-                    $(updatetft).attr('path', entry.fullPath);
-                    $(versiontft).closest('h3').addClass('ui-btn-icon-right ui-icon-star');
-                    $(updatetft).removeClass('ui-state-disabled');
-                  }
-                  //else
-                  //console.log(entry);
-                });
-              }, function (err)
-              {
-                app.setStatus("Error " + err);
-              });
-            }, function (err)
-            {
-              app.setStatus("Error " + err);
-            });
-          }
-          listDir(cordova.file.applicationDirectory + "www/firmware/");
-        }
-      });
-    });
-    
-    FirmwareSend = function(index, path)
-    {
-      app.setStatus("Send " + index + "=" + path);
-      
-      var reader = new FileReader();
-      reader.onload = function(event)
-      {
-        app.setStatus("Read " + reader.result);
-      };
-      reader.onerror = function(err)
-      {
-        app.setStatus("Error " + err);
-      };
-      reader.readAsArrayBuffer(path);
-    }
-  </script>
-
-  <div data-role="footer" data-position="fixed" data-tap-toggle="false">
-    <div class="statusMessage">&nbsp;</div>
-  </div>
 </div>
 
 
 <script type="text/javascript">
   app.initialize();
   //app.setStatus("Init");
+  $(document).ready(function()
+  {
+  });
 </script>
 
 </body>
