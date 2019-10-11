@@ -297,19 +297,17 @@
       ble.read(vBleId, EccbService, CharacteristicText, BleTextChanged, BleError);
     }
 
-    function BlePageChange(page, success, error)
+    function BlePageChange(page, success, error = BleError)
     {
+      var d1 = new ArrayBuffer(2);
+      var d2 = new Uint8Array(d1);
+      d2[0] = 0;
+      d2[1] = page;
+      
+      // Request page change
       if(vBleId)
-      {
-        var d1 = new ArrayBuffer(2);
-        var d2 = new Uint8Array(d1);
-        d2[0] = 0;
-        d2[1] = page;
-        
-        // Request page change
         ble.write(vBleId, EccbService, CharacteristicPage, d1, success, error);
-      }
-      else if(typeof(error) === 'function')
+      else
         error();
     }
         
@@ -325,28 +323,26 @@
         ScreenUpdateLocal();
     }
 
-    function BleTextChange(pageidx, lineidx, text, success, error)
+    function BleTextChange(pageidx, lineidx, text, success, error = BleError)
     {
+      var d1 = String.fromCharCode.apply(null, new Uint8Array([pageidx, lineidx]));
+      d1 += text;
+      
+      var d2 = new ArrayBuffer(d1.length);
+      var d3 = new Uint8Array(d2);
+      for (var i = 0, strLen = d1.length; i < strLen; i++)
+        d3[i] = d1.charCodeAt(i);
+        
+      // Request text change
       if(vBleId)
-      {
-        var d1 = String.fromCharCode.apply(null, new Uint8Array([pageidx, lineidx]));
-        d1 += text;
-        
-        var d2 = new ArrayBuffer(d1.length);
-        var d3 = new Uint8Array(d2);
-        for (var i = 0, strLen = d1.length; i < strLen; i++)
-          d3[i] = d1.charCodeAt(i);
-        
-        // Request text change
         ble.write(vBleId, EccbService, CharacteristicText, d2, success, error);
-      }
-      else if(typeof(error) === 'function')
+      else
         error();
     }
     
     function BlePageConfig(page, success, error = BleError)
     {
-      var buf = new ArrayBuffer(12 + vScreens[page].effect + 1 + vScreens[page].name);
+      var buf = new ArrayBuffer(12 + vScreens[page].effect.length + 1 + vScreens[page].name.length);
       var data = new Uint8Array(buf);
       var t, len;
       
@@ -367,13 +363,13 @@
       data[11] = 0; // rsvd
       len = 12;
 
-      for (var t = 0; t < vScreens[i].effect.length; t++)
-        data[len++] = vScreens[i].effect.charCodeAt(t);
+      for (t = 0; t < vScreens[page].effect.length; t++)
+        data[len++] = vScreens[page].effect.charCodeAt(t);
         
       data[len++] = 0;
 
-      for (var t = 0; t < vScreens[i].name.length; t++)
-        data[len++] = vScreens[i].name.charCodeAt(t);
+      for (t = 0; t < vScreens[page].name.length; t++)
+        data[len++] = vScreens[page].name.charCodeAt(t);
 
       // Send page configuration
       if(vBleId)
@@ -391,6 +387,11 @@
     
     $('#BluetoothConnectPopup').on('popupbeforeposition', function(event, ui)
     {
+      BleStartScan();
+    });
+    
+    BleStartScan = function()
+    {
       console.log('BLE Scan');
       $('#BluetoothConnectButton').addClass('ui-state-disabled');
 
@@ -406,15 +407,15 @@
         {
           if(device.id.slice(0, 11) === "03:80:E1:00")
           {
-            $('#ble-id').text(device.name + " (" + device.id + ")");
             vBleId = device.id;
             vBleName = device.name;
+            $('#ble-id').text(vBleName + " (" +vBleId + ")");
             $('#BluetoothConnectButton').removeClass('ui-state-disabled');
           }
         }, 
         BleError);
       }
-    });
+    };
     
     BluetoothConnectAbort = function()
     {
@@ -428,11 +429,9 @@
     BluetoothConnectExec = function()
     {
       console.log('BluetoothConnectExec');
-  
-     // if(typeof(ble) !== 'undefined')
+      if(typeof(ble) !== 'undefined')
       {
         ble.stopScan();
-
         $('#ble-id').text("Connecting to " + vBleName);
 
         ble.connect(vBleId, function()
@@ -460,7 +459,11 @@
           d2[4] = time % 256; time / 256;
           ble.write(vBleId, EccbService, CharacteristicPage, d1, function(){}, BleError);
         },
-        BleError);
+        function(e)
+        {
+          BleError(e);
+          BleStartScan();
+        });
       }
     }
     
@@ -707,7 +710,8 @@
         'goto':0, 'lines':['C,', 'C,', 'C,', 'C,', 'C,']
       };
       vScreenIndex++;
-      BlePageConfig(vScreenIndex - 1, function(){}, function(){ScreenUpdateLocal();});
+      BlePageConfig(vScreenIndex - 1);
+      ScreenUpdateLocal();
     }
   </script>
 
