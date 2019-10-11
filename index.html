@@ -793,7 +793,13 @@
     {
       var linecfg = "";
       
-      linecfg += $('#TextAlign').val();
+      if($('#TextAlign-L').prop('checked'))
+        linecfg += "L";
+      else if($('#TextAlign-C').prop('checked'))
+        linecfg += "C";
+      else if($('#TextAlign-R').prop('checked'))
+        linecfg += "R";
+        
       if(linecfg.length != 0)
       {
         if($('#TextBold').prop('checked'))
