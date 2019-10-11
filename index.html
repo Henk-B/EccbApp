@@ -208,7 +208,7 @@
     const CharacteristicPage = "0d0a4662-2421-4fbd-90ab-a702ff0239b6";
     const CharacteristicText = "ee5d2e57-3490-4c06-956b-5a384b1cbaa4";
     
-    var vBleId;
+    var vBleId, vBleName;
     
     var vScreenIndex;
     var vScreenWidth;
@@ -403,6 +403,7 @@
           {
             $('#ble-id').text(device.name + " (" + device.id + ")");
             vBleId = device.id;
+            vBleName = device.name;
             $('#BluetoothConnectButton').removeClass('ui-state-disabled');
           }
         }, 
@@ -425,23 +426,20 @@
   
      // if(typeof(ble) !== 'undefined')
       {
-//app.setStatus("A");
         ble.stopScan();
-//app.setStatus("B");
-      $('#ble-id').text("Connecting to " + vBleId);
+
+        $('#ble-id').text("Connecting to " + vBleName);
 
         ble.connect(vBleId, function()
         {
-//app.setStatus("C");
           // Close the popup
           $('#BluetoothConnectPopup').popup('close');
-//app.setStatus("D");
 
           // Issue read to get current status from device
           ble.read(vBleId, EccbService, CharDeviceInfo, BleDeviceInfo, BleError);
           
           // Issue read to get current status from device
-          //ble.read(vBleId, EccbService, CharPageChange, BlePageChanged, BleError);
+          ble.read(vBleId, EccbService, CharPageChange, BlePageNotified, BleError);
         
           // Subscribe to page-change notifications
           ble.startNotification(vBleId, EccbService, CharPageChange, BlePageNotified, BleError);
