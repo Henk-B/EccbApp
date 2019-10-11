@@ -379,8 +379,9 @@
         
     function BleError(error)
     {
-      $('#ble-id').text("ERROR " + error);
-      app.setStatus("ERROR " + error);
+      var txt = JSON.stringify(error);
+      $('#ble-id').text("ERROR " + txt);
+      app.setStatus("BLE ERROR " + txt);
     }
     
     $('#BluetoothConnectPopup').on('popupbeforeposition', function(event, ui)
@@ -499,7 +500,7 @@
       {
         cordova.getAppVersion.getVersionNumber(function(version)
         {
-          app.setStatus("cordova.getAppVersion.getVersionNumber " + version);
+          //app.setStatus("cordova.getAppVersion.getVersionNumber " + version);
           $('#appversion').text(version);
         });
       }
@@ -878,57 +879,59 @@
       for(i = 0; i < vScreens[vScreenIndex - 1].lines.length; i++)
       {
         var line = $('#screenText tr:nth-child(' + (i + 1) + ') input');
-        var split = vScreens[vScreenIndex - 1].lines[i].split(",");
+        var splits = vScreens[vScreenIndex - 1].lines[i].split(',');
         
         // Set placeholder on line inputbox
         line.attr('placeholder', 'keep previous text');
+        line.css('font-weight', '');
+        line.css('text-align', 'center');
         
-        if(split.length >= 2)
+        if(splits.length >= 2)
         {
-          split[0] = split[0].trim();
-          line.val(split.slice(1).join(','));
+          splits[0] = splits[0].trim();
           
           // Remove placeholder
-          if(split[0].length != 0)
-            line.attr('placeholder', '');
-          
-          line.css('font-weight', '');
-
-          for(var j = 0; j < split[0].length; j++)
+          if(splits[0].length != 0)
           {
-            switch(split[0][j])
+            line.attr('placeholder', '');
+            line.val(splits.slice(1).join(','));
+          
+            for(var j = 0; j < splits[0].length; j++)
             {
-              case 'B': // Bold
-                line.css('font-weight', 'bold');
-              break;
+              switch(splits[0][j])
+              {
+                case 'B': // Bold
+                  line.css('font-weight', 'bold');
+                break;
 
-              case 'P': // Parser for date/time
-                //$('#ParseDate').prop("checked", true);
-              break;
+                case 'P': // Parser for date/time
+                  //$('#ParseDate').prop("checked", true);
+                break;
 
-              case 'S': // Scroll
-                //$('#TextScroll').val(x);
-              break;
+                case 'S': // Scroll
+                  //$('#TextScroll').val(x);
+                break;
 
-              case 'T': // Ticker
-              break;
+                case 'T': // Ticker
+                break;
 
-              case 'L': // Left aligned
-                line.css('text-align', 'left');
-              break;
-              case 'C': // Center aligned
-                line.css('text-align', 'center');
-              break;
-              case 'R': // Right aligned
-                line.css('text-align', 'right');
-              break;
-              
-              case ' ':
-              break;
-              
-              default:
-                console.log("ScreenUpdateLocal uncaught '" + split[0][j] + "'");
-              break;
+                case 'L': // Left aligned
+                  line.css('text-align', 'left');
+                break;
+                case 'C': // Center aligned
+                  line.css('text-align', 'center');
+                break;
+                case 'R': // Right aligned
+                  line.css('text-align', 'right');
+                break;
+                
+                case ' ':
+                break;
+                
+                default:
+                  console.log("ScreenUpdateLocal uncaught '" + splits[0][j] + "'");
+                break;
+              }
             }
           }
         }
