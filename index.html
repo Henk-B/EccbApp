@@ -422,6 +422,8 @@
     BluetoothConnectExec = function()
     {
       console.log('BluetoothConnectExec');
+  app.setStatus("BluetoothConnectExec");
+  
       if(typeof(ble) !== 'undefined')
       {
         ble.stopScan();
