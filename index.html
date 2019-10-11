@@ -217,16 +217,18 @@
     function BleDeviceInfo(buffer)
     {
       var text = String.fromCharCode.apply(null, new Uint8Array(buffer));
-      text = text.split("\n");
+      text = text.split('\n');
       for(var i = 0; i < text.length; i++)
       {
+        var t = text[i].split(' ').slice(1).join(' ');
+        
         switch(i)
         {
-          case 0: $('#hardware').text(text[i]); break;
-          case 1: $('#serial').text(text[i]); break;
-          case 2: $('#bootloader').text(text[i]); break;
-          case 3: $('#firmware').text(text[i]); break;
-          case 4: $('#fpgaware').text('0.1'); break;
+          case 0: $('#hardware').text(t); break;
+          case 1: $('#serial').text(t); break;
+          case 2: $('#bootloader').text(t); break;
+          case 3: $('#firmware').text(t); break;
+          case 4: $('#fpgaware').text(t); break;
         }
       }
     }
@@ -482,6 +484,24 @@
     </div>
   </div>
   <script>
+    $(document).ready(function()
+    {
+      //app.enable(update-cpu);
+
+      $(document).on("pagecontainerchange", function(event, ui)
+      {
+        if($("body").pagecontainer("getActivePage").attr('id') == "content")
+        {
+          app.setStatus("try cordova.getAppVersion.getVersionNumber");
+          cordova.getAppVersion.getVersionNumber(function (version)
+          {
+            app.setStatus("cordova.getAppVersion.getVersionNumber " + version);
+            document.getElementById("versionapp").innerText = version;
+          });
+        }
+      });
+    });
+  
     $('#SystemInfoPopup').on('popupbeforeposition', function(event, ui)
     {
       try
@@ -818,6 +838,7 @@
       }
       vScreens[vScreenIndex-1].lines[parseInt($('#LineConfigPopup span#no').text())-1] = linecfg;
       ScreenUpdateLocal();
+      BleTextChange(vScreenIndex-1, no-1, text);
     }
   </script>
   <script>
@@ -964,33 +985,6 @@
         }
       });
     });
-
-    mainValue = function(args)
-    {
-      if(args === undefined)
-        var args = ["---", "0"];
-
-      if(lastValue == args)
-        return;
-      lastValue = args;
-
-      $('.weight').html(args[0]);
-
-      if(indicators)
-      {
-        args[1] = parseInt(args[1]);
-
-        $('td.ind_red').css('background', args[1] & 0x01 ? "red" : "darkred");
-        $('.ind_red').css('color', args[1] & 0x01 ? "red" : "darkred");
-
-        $('td.ind_yellow').css('background', args[1] & 0x02 ? "yellow" : "chocolate");
-        $('.ind_yellow').css('color', args[1] & 0x02 ? "yellow" : "chocolate");
-
-        $('td.ind_green').css('background', args[1] & 0x04 ? "lime" : "darkgreen");
-        $('.ind_green').css('color', args[1] & 0x04 ? "lime" : "darkgreen");
-      }
-    }
-    lastValue = ["",""];
   </script>
 
   <script type="text/javascript">
