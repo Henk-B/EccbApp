@@ -422,17 +422,20 @@
     BluetoothConnectExec = function()
     {
       console.log('BluetoothConnectExec');
-  app.setStatus("BluetoothConnectExec");
   
       if(typeof(ble) !== 'undefined')
       {
+app.setStatus("A");
         ble.stopScan();
-        $('#ble-id').text("Connecting to " + device.name);
+app.setStatus("B");
+      $('#ble-id').text("Connecting to " + device.name);
 
         ble.connect(vBleId, function()
         {
+app.setStatus("C");
           // Close the popup
           $('#BluetoothConnectPopup').popup('close');
+app.setStatus("D");
 
           // Issue read to get current status from device
           ble.read(vBleId, EccbService, CharDeviceInfo, BleDeviceInfo, BleError);
