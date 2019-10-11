@@ -327,10 +327,12 @@
     {
       var d1 = String.fromCharCode.apply(null, new Uint8Array([pageidx, lineidx]));
       d1 += text;
+
+app.setStatus("BleTextChange " + d1);
       
       var d2 = new ArrayBuffer(d1.length);
       var d3 = new Uint8Array(d2);
-      for (var i = 0, strLen = d1.length; i < strLen; i++)
+      for (var i = 0; i < d1.length; i++)
         d3[i] = d1.charCodeAt(i);
         
       // Request text change
@@ -380,7 +382,16 @@
         
     function BleError(error)
     {
-      var txt = JSON.stringify(error);
+      var txt;
+      if(typeof(error) === 'undefined')
+        txt = BleError.caller.name;
+      else if(typeof(error.errorMessage) !== 'undefined')
+        txt = error.errorMessage;
+      else if(typeof(error) === 'string')
+        txt = error;
+      else
+        txt = JSON.stringify(error);
+        
       $('#ble-id').text("ERROR " + txt);
       app.setStatus("BLE ERROR " + txt);
     }
@@ -438,6 +449,7 @@
         {
           // Close the popup
           $('#BluetoothConnectPopup').popup('close');
+          $('#ble-id').text("Connected to " + vBleName);
 
           // Issue read to get current status from device
           ble.read(vBleId, EccbService, CharDeviceInfo, BleDeviceInfo, BleError);
@@ -721,11 +733,11 @@
       
       <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
         <legend>Text alignment</legend>
-        <input type="radio" name="TextAlign" id="TextAlign-L" value="L" />
+        <input type="radio" name="TextAlign" id="TextAlign-L" value="L" onclick="TextAlignCheck(this);" />
         <label for="TextAlign-L">Left</label>
-        <input type="radio" name="TextAlign" id="TextAlign-C" value="C" />
+        <input type="radio" name="TextAlign" id="TextAlign-C" value="C" onclick="TextAlignCheck(this);" />
         <label for="TextAlign-C">Center</label>
-        <input type="radio" name="TextAlign" id="TextAlign-R" value="R" />
+        <input type="radio" name="TextAlign" id="TextAlign-R" value="R" onclick="TextAlignCheck(this);" />
         <label for="TextAlign-R">Right</label>
       </fieldset>
       
@@ -744,6 +756,16 @@
     </div>
   </div>
   <script>
+    TextAlignCheck = function(_this)
+    {
+      if($(_this).prev().hasClass('ui-radio-on'))
+      {
+        $(_this).prop('checked', false);
+        $(_this).prev().removeClass('ui-radio-on');
+        $(_this).prev().addClass('ui-radio-off');
+      }
+    }
+    
     $('#LineConfigPopup').on('popupcreate', function(event, ui)
     {
       $('#TextAlign-L').parent().css('width', '33%');
