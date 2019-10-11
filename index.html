@@ -423,19 +423,19 @@
     {
       console.log('BluetoothConnectExec');
   
-      if(typeof(ble) !== 'undefined')
+     // if(typeof(ble) !== 'undefined')
       {
-app.setStatus("A");
+//app.setStatus("A");
         ble.stopScan();
-app.setStatus("B");
-      $('#ble-id').text("Connecting to " + device.name);
+//app.setStatus("B");
+      $('#ble-id').text("Connecting to " + vBleId);
 
         ble.connect(vBleId, function()
         {
-app.setStatus("C");
+//app.setStatus("C");
           // Close the popup
           $('#BluetoothConnectPopup').popup('close');
-app.setStatus("D");
+//app.setStatus("D");
 
           // Issue read to get current status from device
           ble.read(vBleId, EccbService, CharDeviceInfo, BleDeviceInfo, BleError);
