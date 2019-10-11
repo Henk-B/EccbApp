@@ -508,7 +508,7 @@
       {
         cordova.getAppVersion.getVersionNumber(function(version)
         {
-          app.setStatus(version);
+            app.setStatus("cordova.getAppVersion.getVersionNumber " + version);
 
           //$('#versionapp').text(version);
           document.getElementById("versionapp").innerText = version;
