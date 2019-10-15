@@ -315,10 +315,7 @@
 
       // Request page change
       if(vBleId)
-        //ble.write(vBleId, EccbService, CharNotifyCmd, d1, success, error);
-      {
-        ble.write(vBleId, EccbService, CharNotifyCmd, d1, function(e){app.setStatus("BlePageChange success " + e); success();}, function(e){app.setStatus("BlePageChange Error " + JSON.stringify(e)); error();});
-      }
+        ble.write(vBleId, EccbService, CharNotifyCmd, d1, success, error);
       else
         error();
     }
@@ -402,8 +399,8 @@
       var txt;
       if(typeof(error) === 'undefined')
         txt = BleError.caller.name;
-  //    else if(typeof(error.errorMessage) !== 'undefined')
-  //      txt = error.errorMessage;
+      else if(typeof(error.errorMessage) !== 'undefined')
+        txt = error.errorMessage;
       else if(typeof(error) === 'string')
         txt = error;
       else
@@ -476,7 +473,7 @@
         
           // Subscribe to page-change notifications
           ble.startNotification(vBleId, EccbService, CharNotifyCmd, BlePageNotified, BleError);
-          
+       if(0){
           // Send time and date to device
           var d1 = new ArrayBuffer(5);
           var d2 = new Uint8Array(d1);
@@ -487,6 +484,7 @@
           d2[3] = time % 256; time / 256;
           d2[4] = time % 256; time / 256;
           ble.write(vBleId, EccbService, CharNotifyCmd, d1, function(){}, BleError);
+      }
         },
         function(e)
         {
@@ -542,18 +540,12 @@
   <script>
     $('#SystemInfoPopup').on('popupbeforeposition', function(event, ui)
     {
-      try
+      if(typeof(cordova) !== 'undefined')
       {
         cordova.getAppVersion.getVersionNumber(function(version)
         {
-          //app.setStatus("cordova.getAppVersion.getVersionNumber " + version);
           $('#appversion').text(version);
         });
-      }
-      catch(e)
-      {
-        if(typeof(AppVersion) != 'undefined')
-          $('#appversion').text(AppVersion.version);
       }
     });
   </script>
