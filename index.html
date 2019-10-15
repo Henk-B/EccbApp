@@ -325,7 +325,9 @@
       var data = new Uint8Array(buffer, 0, 1);
       var text = String.fromCharCode.apply(null, new Uint8Array(buffer, 1));
       
-      vScreens[vScreenIndex - 1].lines[data[0]] = text;
+      vScreens[vScreenIndex-1].lines[data[0]] = text;
+if(data[0] <= 1)
+app.setStatus("line"+data[0]+"="+text);      
       if((data[0] + 1) < 5)
         ble.read(vBleId, EccbService, CharacteristicText, BleTextChanged, BleError);
       else
@@ -636,9 +638,9 @@
   </tr></table>
 
   <table id="screenText" style="text-align:center;">
-    <tr id="line1"><td><input type="text" class="eccb" data-mini="true" value="" onchange="lineUpdate(1);"/></td>
+    <tr id="line1"><td><input type="text" class="eccb" data-mini="true" value="" onchange="lineUpdate(1);" onclick="app.setStatus(vScreens[vScreenIndex-1].lines[0]);" /></td>
       <td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="lineConfig(1);"></a></td></tr>
-    <tr id="line2"><td><input type="text" class="eccb" data-mini="true" value="" onchange="lineUpdate(2);" /></td>
+    <tr id="line2"><td><input type="text" class="eccb" data-mini="true" value="" onchange="lineUpdate(2);" onclick="app.setStatus(vScreens[vScreenIndex-1].lines[1]);" /></td>
       <td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="lineConfig(2);"></a></td></tr>
     <tr id="line3"><td><input type="text" class="eccb" data-mini="true" value="" onchange="lineUpdate(3);" /></td>
       <td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="lineConfig(3);"></a></td></tr>
@@ -894,7 +896,6 @@
             }
             while(/^[A-Z]$/i.test(ch));
 
-            console.log(opcode.join(''));
             $('#TextScroll').val(opcode.join(''));
 
             if(/^\d$/.test(ch))
