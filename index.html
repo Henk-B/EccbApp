@@ -413,14 +413,17 @@ app.setStatus("line"+data[0]+"="+text);
     
     $('#BluetoothConnectPopup').on('popupbeforeposition', function(event, ui)
     {
+app.setStatus("BluetoothConnectPopup");
       BleStartScan();
     });
     
     BleStartScan = function()
     {
+app.setStatus("BleStartScan A");
       console.log('BLE Scan');
       $('#BluetoothConnectButton').addClass('ui-state-disabled');
 
+app.setStatus("BleStartScan B");
       $('#hardware').text("?");
       $('#serial').text("?");
       $('#bootloader').text("?");
@@ -429,10 +432,13 @@ app.setStatus("line"+data[0]+"="+text);
       
       if(typeof(ble) !== 'undefined')
       {
+app.setStatus("BleStartScan C");
         ble.requestMtu(yourDeviceId, 512, function(x){}, BleError);
       
+app.setStatus("BleStartScan D");
         ble.startScan([], function(device)
         {
+app.setStatus("BleStartScan E");
           if(device.id.slice(0, 11) === "03:80:E1:00")
           {
             vBleId = device.id;
