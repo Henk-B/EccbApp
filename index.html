@@ -308,9 +308,6 @@
 
     function BlePageChange(page, success, error)
     {
-      if(typeof(error) === 'undefined')
-        error = BleError;
-        
       var d1 = new ArrayBuffer(2);
       var d2 = new Uint8Array(d1);
       d2[0] = 0x00;
@@ -318,7 +315,7 @@
 
       // Request page change
       if(vBleId)
-        ble.write(vBleId, EccbService, CharNotifyCmd, d1, success, error);
+        ble.write(vBleId, EccbService, CharNotifyCmd, d1, success, function(e){BleError(e); error(e);});
       else
         error();
     }
@@ -338,9 +335,6 @@
 
     function BleTextChange(pageidx, lineidx, text, success, error)
     {
-      if(typeof(error) === 'undefined')
-        error = BleError;
-        
       var d1 = String.fromCharCode.apply(null, new Uint8Array([pageidx, lineidx]));
       d1 += text;
 
@@ -351,16 +345,13 @@
         
       // Request text change
       if(vBleId)
-        ble.write(vBleId, EccbService, CharacteristicText, d2, success, error);
+        ble.write(vBleId, EccbService, CharacteristicText, d2, success, function(e){BleError(e); error(e);});
       else
         error();
     }
     
     function BlePageConfig(page, success, error)
     {
-      if(typeof(error) === 'undefined')
-        error = BleError;
-        
       var buf = new ArrayBuffer(12 + vScreens[page].effect.length + 1 + vScreens[page].name.length);
       var data = new Uint8Array(buf);
       var t, len;
@@ -398,7 +389,7 @@
 
       // Send page configuration
       if(vBleId)
-        ble.write(vBleId, EccbService, CharacteristicPage, buf, success, error);
+        ble.write(vBleId, EccbService, CharacteristicPage, buf, success, function(e){BleError(e); error(e);});
       else
         error();
     }
