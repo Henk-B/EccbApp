@@ -2,7 +2,7 @@
 <widget id="nl.whitebream.eccb" 
     xmlns="http://www.w3.org/ns/widgets"
     xmlns:gap="http://phonegap.com/ns/1.0"
-    version="0.1.58">
+    version="0.1.59">
 
     <name>Electronic Copyboard</name>
     
@@ -22,7 +22,7 @@
 	<plugin name="cordova.plugins.diagnostic" />
 
     <icon src="img/etulipa_CMYK.png" width="150" height="150" />
-
+	
     <feature name="http://api.phonegap.com/1.0/device" />
 	<preference name='phonegap-version' value='cli-9.0.0' />
 	<preference name="orientation" value="default" />
