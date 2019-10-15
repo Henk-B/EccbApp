@@ -282,7 +282,7 @@
       vScreens[page].alarm.setHours(idx & 0x1F); idx >>= 5;
       vScreens[page].alarm.setDate(idx & 0x1F + 1); idx >>= 5;
       vScreens[page].alarm.setMont(idx & 0xF); idx >>= 4;
-      vScreens[page].alarm.setFullYear(2010 + (idx & 0xFF)); idx >>= 9;
+      vScreens[page].alarm.setFullYear(2010 + (idx & 0x1FF)); idx >>= 9;
       vScreens[page].repeat = data[10];
       vScreens[page].interval = data[11];
       vScreens[page].jump = data[12];
@@ -295,7 +295,7 @@
       if(idx == 13)  // No effect specified
         vScreens[page].effect = "";
       else
-        vScreens[page].effect = String.fromCharCode.apply(null, new Uint8Array(buffer, 12, idx - 12));
+        vScreens[page].effect = String.fromCharCode.apply(null, new Uint8Array(buffer, 13, idx - 13));
       
       if(idx == data.length)
         vScreens[page].name = "";
