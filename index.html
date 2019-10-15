@@ -310,9 +310,10 @@
     {
       var d1 = new ArrayBuffer(2);
       var d2 = new Uint8Array(d1);
-      d2[0] = 0;
+      d2[0] = 0x00;
       d2[1] = page;
-      
+app.setStatus("BlePageChange req " + page);
+
       // Request page change
       if(vBleId)
         ble.write(vBleId, EccbService, CharNotifyCmd, d1, success, error);
@@ -326,8 +327,7 @@
       var text = String.fromCharCode.apply(null, new Uint8Array(buffer, 1));
       
       vScreens[vScreenIndex-1].lines[data[0]] = text;
-if(data[0] <= 1)
-app.setStatus("line"+data[0]+"="+text);      
+
       if((data[0] + 1) < 5)
         ble.read(vBleId, EccbService, CharacteristicText, BleTextChanged, BleError);
       else
@@ -413,17 +413,14 @@ app.setStatus("line"+data[0]+"="+text);
     
     $('#BluetoothConnectPopup').on('popupbeforeposition', function(event, ui)
     {
-app.setStatus("BluetoothConnectPopup");
       BleStartScan();
     });
     
     BleStartScan = function()
     {
-app.setStatus("BleStartScan A");
       console.log('BLE Scan');
       $('#BluetoothConnectButton').addClass('ui-state-disabled');
 
-app.setStatus("BleStartScan B");
       $('#hardware').text("?");
       $('#serial').text("?");
       $('#bootloader').text("?");
@@ -432,13 +429,8 @@ app.setStatus("BleStartScan B");
       
       if(typeof(ble) !== 'undefined')
       {
-app.setStatus("BleStartScan C");
-        //ble.requestMtu(yourDeviceId, 512, function(x){}, BleError);
-      
-app.setStatus("BleStartScan D");
         ble.startScan([], function(device)
         {
-app.setStatus("BleStartScan E");
           if(device.id.slice(0, 11) === "03:80:E1:00")
           {
             vBleId = device.id;
