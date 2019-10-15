@@ -475,7 +475,7 @@
         
           // Subscribe to page-change notifications
           ble.startNotification(vBleId, EccbService, CharNotifyCmd, BlePageNotified, BleError);
-       if(0){
+
           // Send time and date to device
           var d1 = new ArrayBuffer(5);
           var d2 = new Uint8Array(d1);
@@ -486,7 +486,6 @@
           d2[3] = time % 256; time / 256;
           d2[4] = time % 256; time / 256;
           ble.write(vBleId, EccbService, CharNotifyCmd, d1, function(){}, BleError);
-      }
         },
         function(e)
         {
@@ -517,7 +516,7 @@
         var d2 = new Uint8Array(d1);
         d2[0] = 0x10;
         
-        // Request save data
+        // Request playback of page from t=0 and live view of sequence
         ble.write(vBleId, EccbService, CharNotifyCmd, d1, function(){}, BleError);
       }
     }
@@ -626,7 +625,7 @@
     <td style="text-align:center;"><input id="screenName" type="text" data-inline="true" data-mini="true" readonly value="Screen1"></td>
     <td style="text-align:right;">
       <a id="screenCfg" href="#ScreenConfigPopup" class="ui-icon-clock ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" data-rel="popup" data-position-to="window" data-transition="pop">Config</a>
-      <a id="screenRefresh" href="#" class="ui-icon-eye ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="BluetoothRefresh();">Refresh</a>
+      <a id="BluetoothRefresh" href="#" class="ui-icon-eye ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="BluetoothRefresh();">Refresh</a>
       <a id="screenUndo" href="#" class="ui-icon-back ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="ScreenReadScreen();">Undo</a>
       <a id="browseFwd" href="#" class="ui-icon-carat-r ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="ScreenGoto(this);">Next</a>
     </td>
@@ -1018,11 +1017,6 @@
         vScreens[i].refresh = 10;
     }
     
-    ScreenRefresh = function()
-    {
-      // Send screen data to display and request play at t=0
-    }
-
     ScreenUpdateLocal = function()
     {
       // Update screen number indicator and label
