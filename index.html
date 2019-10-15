@@ -265,6 +265,8 @@
       var data = new Uint8Array(buffer);
       var page, idx;
 
+      app.setStatus("BlePageChanged(" + data.length ")");
+
       if(data.length < 10)
         return;
         
@@ -287,21 +289,26 @@
       vScreens[page].interval = data[11];
       vScreens[page].jump = data[12];
     
+  app.setStatus("BlePageChanged, A");
+
       for (idx = 13; idx < data.length; idx++)
         if(data[idx] == 0)
           break;
+  app.setStatus("BlePageChanged, B");
     
       // Get page effect and label
       if(idx == 13)  // No effect specified
         vScreens[page].effect = "";
       else
         vScreens[page].effect = String.fromCharCode.apply(null, new Uint8Array(buffer, 13, idx - 13));
+  app.setStatus("BlePageChanged, C");
       
       if(idx == data.length)
         vScreens[page].name = "";
       else
         vScreens[vScreenIndex - 1].name = String.fromCharCode.apply(null, new Uint8Array(buffer, idx + 1));
 
+  app.setStatus("BlePageChanged, D");
       // Request page text lines
       ble.read(vBleId, EccbService, CharacteristicText, BleTextChanged, BleError);
     }
