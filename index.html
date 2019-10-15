@@ -283,7 +283,7 @@
       vScreens[page].alarm.setMinutes(idx & 0x2F); idx >>= 6;
       vScreens[page].alarm.setHours(idx & 0x1F); idx >>= 5;
       vScreens[page].alarm.setDate(idx & 0x1F + 1); idx >>= 5;
-      vScreens[page].alarm.setMont(idx & 0xF); idx >>= 4;
+      vScreens[page].alarm.setMonth(idx & 0xF); idx >>= 4;
       vScreens[page].alarm.setFullYear(2010 + (idx & 0x1FF)); idx >>= 9;
       vScreens[page].repeat = data[10];
       vScreens[page].interval = data[11];
