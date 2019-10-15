@@ -433,7 +433,7 @@ app.setStatus("BleStartScan B");
       if(typeof(ble) !== 'undefined')
       {
 app.setStatus("BleStartScan C");
-        ble.requestMtu(yourDeviceId, 512, function(x){}, BleError);
+        //ble.requestMtu(yourDeviceId, 512, function(x){}, BleError);
       
 app.setStatus("BleStartScan D");
         ble.startScan([], function(device)
