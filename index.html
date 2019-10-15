@@ -402,8 +402,8 @@
       var txt;
       if(typeof(error) === 'undefined')
         txt = BleError.caller.name;
-      else if(typeof(error.errorMessage) !== 'undefined')
-        txt = error.errorMessage;
+  //    else if(typeof(error.errorMessage) !== 'undefined')
+  //      txt = error.errorMessage;
       else if(typeof(error) === 'string')
         txt = error;
       else
