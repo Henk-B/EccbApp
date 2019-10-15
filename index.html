@@ -828,7 +828,8 @@
     
     $('#LineConfigPopup').on('popupbeforeposition', function(event, ui)
     {
-      var line = vScreens[vScreenIndex-1].lines[parseInt($('#LineConfigPopup span#no').text())-1].split(",")[0];
+      var splits = vScreens[vScreenIndex-1].lines[parseInt($('#LineConfigPopup span#no').text())-1].split(",");
+      var line = splits[0];
 
       $('#TextAlign-L').prop('checked', false);
       $('#TextAlign-C').prop('checked', false);
@@ -893,6 +894,7 @@
             }
             while(/^[A-Z]$/i.test(ch));
 
+            console.log(opcode.join(''));
             $('#TextScroll').val(opcode.join(''));
 
             if(/^\d$/.test(ch))
@@ -1000,8 +1002,10 @@
     var vScreens = new Array();
     vScreens[0] = {'name':'Intro', 'effect':'RADAR,10', 'lines':['L,intro text 1', 'CBT,intro text 2', 'R,intro text 3', 'C,intro text 4', 'L,intro text 5']};
     vScreens[1] = {'name':'Etulipa', 'effect':'BUBBLE,10', 'lines':['CB,E T U L I P A', 'CT SLTC12,presents', 'C,', 'CT,Electronic controlled', 'CT,Copyboard']};
-    vScreens[2] = {'name':'Page', 'effect':'RADAR,10', 'lines':['', 'L,', 'L,note that the first', 'C,line is preserved', 'R,from previous screen']};
+    vScreens[2] = {'name':'Page', 'effect':'NOISE,10', 'lines':['', 'L,', 'L,note that the first', 'C,line is preserved', 'R,from previous screen']};
     vScreens[3] = {'name':'Outro', 'effect':'RANDOM,10', 'lines':['L,outro text 1', 'C,outro text 2', 'R,outro text 3', 'R,outro text 4', 'R,outro text 5']};
+
+    vScreens[4] = {'name':'Outro', 'effect':'RANDOM,10', 'lines':['SLCT5,TICKER WITH TEXT EXCEEDING THE AVAILABLE WIDTH', 'L SLC5,END LEFT <', 'R SRC5,> END RIGHT', '', '']};
 
     for (var i in vScreens)
     {
@@ -1042,7 +1046,6 @@
         {
           splits[0] = splits[0].trim();
           
-          // Remove placeholder
           if(splits[0].length != 0)
           {
             line.css('font-weight', '');
