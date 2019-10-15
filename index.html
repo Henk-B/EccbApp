@@ -246,7 +246,7 @@
         // Add missing pages
         for(var i = 0; i < vScreenIndex; i++)
           if(typeof(vScreens[i]) !== 'object')
-            vScreens[i] = {'name':'', 'effect':'', 'duration':60, 'refresh':6, 'goto':0, 'lines':['', '', '', '', '']};
+            vScreens[i] = {'name':'', 'effect':'NONE,10', 'duration':60, 'refresh':6, 'jump':0, 'alarm': new Date(), 'repeat':'', 'interval':9, 'lines':['', '', '', '', '']};
 
         // Invalidate non existing pages in local data
         while(vScreens.length > data[1])
@@ -271,19 +271,28 @@
       page = data[0];  // Update page number
       vScreens[page].duration = data[3] * 256 + data[2];
       vScreens[page].refresh = data[5] * 256 + data[4];
+      
       idx = data[9];
       idx = idx * 256 + data[8];
       idx = idx * 256 + data[7];
       idx = idx * 256 + data[6];
-      vScreens[page].alarm = idx;
-      vScreens[page].goto = data[10];
+      //parse "2019-10-08T12:33"
+      vScreens[page].alarm = new Date();
+      vScreens[page].alarm.setMinutes(idx & 0x2F); idx >>= 6;
+      vScreens[page].alarm.setHours(idx & 0x1F); idx >>= 5;
+      vScreens[page].alarm.setDate(idx & 0x1F + 1); idx >>= 5;
+      vScreens[page].alarm.setMont(idx & 0xF); idx >>= 4;
+      vScreens[page].alarm.setFullYear(2010 + (idx & 0xFF)); idx >>= 9;
+      vScreens[page].repeat = data[10];
+      vScreens[page].interval = data[11];
+      vScreens[page].jump = data[12];
     
-      for (idx = 12; idx < data.length; idx++)
+      for (idx = 13; idx < data.length; idx++)
         if(data[idx] == 0)
           break;
     
       // Get page effect and label
-      if(idx == 12)  // No effect specified
+      if(idx == 13)  // No effect specified
         vScreens[page].effect = "";
       else
         vScreens[page].effect = String.fromCharCode.apply(null, new Uint8Array(buffer, 12, idx - 12));
@@ -328,8 +337,6 @@
       var d1 = String.fromCharCode.apply(null, new Uint8Array([pageidx, lineidx]));
       d1 += text;
 
-app.setStatus("BleTextChange " + d1);
-      
       var d2 = new ArrayBuffer(d1.length);
       var d3 = new Uint8Array(d2);
       for (var i = 0; i < d1.length; i++)
@@ -344,7 +351,7 @@ app.setStatus("BleTextChange " + d1);
     
     function BlePageConfig(page, success, error = BleError)
     {
-      var buf = new ArrayBuffer(12 + vScreens[page].effect.length + 1 + vScreens[page].name.length);
+      var buf = new ArrayBuffer(13 + vScreens[page].effect.length + 1 + vScreens[page].name.length);
       var data = new Uint8Array(buf);
       var t, len;
       
@@ -356,14 +363,21 @@ app.setStatus("BleTextChange " + d1);
       t = vScreens[page].refresh;
       data[4] = t % 256; t /= 256;
       data[5] = t % 256; t /= 256;
-      t = vScreens[page].alarm;
+      //parse "2019-10-08T12:33" 
+      t = vScreens[page].alarm.getDay();
+      t = (t << 9) | vScreens[page].alarm.getFullYear() - 2010;
+      t = (t << 4) | vScreens[page].alarm.getMonth();
+      t = (t << 5) | vScreens[page].alarm.getDate() - 1;
+      t = (t << 5) | vScreens[page].alarm.getHours();
+      t = (t << 6) | vScreens[page].alarm.getMinutes();
       data[6] = t % 256; t /= 256;
       data[7] = t % 256; t /= 256;
       data[8] = t % 256; t /= 256;
       data[9] = t % 256; t /= 256;
-      data[10] = vScreens[page].goto;
-      data[11] = 0; // rsvd
-      len = 12;
+      data[10] = vScreens[page].repeat;
+      data[11] = vScreens[page].interval;
+      data[12] = vScreens[page].jump;
+      len = 13;
 
       for (t = 0; t < vScreens[page].effect.length; t++)
         data[len++] = vScreens[page].effect.charCodeAt(t);
@@ -641,26 +655,39 @@ app.setStatus("BleTextChange " + d1);
   <div data-role="popup" id="ScreenConfigPopup" data-theme="a" data-transition="pop" data-position-to="window" class="ui-corner-all">
     <div role="main" class="ui-content">
       <h3>Parameters for this page</h3>
-      <table><tr><td>
+      <table><tr><td colspan="2">
         <label for="ScreenName">Label</label>
         <input id="ScreenName" type="text" data-mini="true" value="x" />
-      </td><td>
+      </td><td width="25%">
         <label for="ScreenDuration">Duration</label>
         <input id="ScreenDuration" type="number" data-mini="true" value="0" />
       </td></tr>
-      <tr><td>
+      <tr><td width="50%">
         <label for="ScreenEffect">Effect</label>
-        <select id="ScreenEffect" data-mini="true" data-native-menu="false"><option value="NONE,">None</option><option value="RADAR,">Radar</option><option value="BUBBLE,">Bubble</option></select>
+        <select id="ScreenEffect" data-mini="true" data-native-menu="false"><option value="NONE">None</option><option value="NOISE">Noise</option><option value="RADAR">Radar</option><option value="BUBBLE">Bubble</option><option value="RIPPLE" disabled>Ripple</option><option value="ROLL-H" disabled>Roll (H)</option><option value="ROLL-V" disabled>Roll (V)</option><option value="STRIPE-H" disabled>Stripes (H)</option><option value="STRIPE-V" disabled>Stripes (V)</option><option value="RANDOM">Random</option></select>
+      </td><td width="25%">
+        <label for="ScreenEffectVal">Speed</label>
+        <input id="ScreenEffectVal" type="number" data-mini="true" value="10" />
       </td><td>
         <label for="ScreenRefresh">Refresh</label>
         <input id="ScreenRefresh" type="number" data-mini="true" value="0" />
-      </td></tr>
-      <tr><td>
+      </td></tr></table>
+      <table><tr><td colspan="2">
+      <tr><td colspan="2">
         <label for="ScreenAlarm">Alarm</label>
         <input id="ScreenAlarm" type="datetime-local" data-mini="true" value="" />
-      </td><td>
-        <label for="ScreenGoto">Refresh</label>
+      </td><td width="25%">
+        <label for="ScreenGoto">Jump to</label>
         <input id="ScreenGoto" type="number" data-mini="true" value="" />
+      </td></tr>
+      <tr><td width="25%">
+        <label for="ScreenInterval">Repeat</label>
+        <input id="ScreenInterval" type="number" data-mini="true" value="1" />
+      </td><td width="50%">
+        <label for="ScreenRepeat">&nbsp;</label>
+        <select id="ScreenRepeat" data-mini="true" data-native-menu="false"><option value="0" selected>Alarm OFF</option><option value="1">Once</option><option value="2">Minutes</option><option value="3">Hours</option><option value="4">Days</option><option value="5">Weeks</option><option value="6">Months</option><option value="7">Years</option></select>
+      </td><td>
+        &nbsp;
       </td></tr></table>
       
       <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Cancel</a>
@@ -670,18 +697,34 @@ app.setStatus("BleTextChange " + d1);
   <script>
     $('#ScreenConfigPopup').on('popupbeforeposition', function(event, ui)
     {
+      var effect = vScreens[vScreenIndex - 1].effect.split(',');
+      if(effect.length == 1)
+        effect[1] = 0;
+      
       $('#ScreenName').val(vScreens[vScreenIndex - 1].name);
-      $('#ScreenEffect').val(vScreens[vScreenIndex - 1].effect).selectmenu('refresh');
+      $('#ScreenEffect').val(effect[0]).selectmenu('refresh');
+      $('#ScreenEffectVal').val(effect[1]);
       $('#ScreenDuration').val(vScreens[vScreenIndex - 1].duration);
       $('#ScreenRefresh').val(vScreens[vScreenIndex - 1].refresh);
+      var date = new Date(vScreens[vScreenIndex - 1].alarm);
+      date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+      $('#ScreenAlarm').val(date.toISOString().slice(0,16));
+      $('#ScreenRepeat').val(vScreens[vScreenIndex - 1].repeat).selectmenu('refresh');
+      $('#ScreenInterval').val(vScreens[vScreenIndex - 1].interval);
+      $('#ScreenGoto').val(vScreens[vScreenIndex - 1].jump);
     });
     
     ScreenConfigExec = function()
     {
       vScreens[vScreenIndex - 1].name = $('#ScreenName').val();
-      vScreens[vScreenIndex - 1].effect = $('#ScreenEffect').val();
-      vScreens[vScreenIndex - 1].duration = $('#ScreenDuration').val();
-      vScreens[vScreenIndex - 1].refresh = $('#ScreenRefresh').val(); 
+      vScreens[vScreenIndex - 1].effect = $('#ScreenEffect').val() + "," + $('#ScreenEffectVal').val();
+      vScreens[vScreenIndex - 1].duration = parseInt($('#ScreenDuration').val());
+      vScreens[vScreenIndex - 1].refresh = parseInt($('#ScreenRefresh').val());
+      
+      vScreens[vScreenIndex - 1].alarm = new Date($('#ScreenAlarm').val());
+      vScreens[vScreenIndex - 1].repeat = parseInt($('#ScreenRepeat').val());
+      vScreens[vScreenIndex - 1].interval = parseInt($('#ScreenInterval').val());
+      vScreens[vScreenIndex - 1].jump = parseInt($('#ScreenGoto').val());
       
       BlePageConfig(vScreenIndex - 1);
       ScreenUpdateLocal();
@@ -719,7 +762,8 @@ app.setStatus("BleTextChange " + d1);
         'effect': vScreens[vScreenIndex-1].effect,
         'duration': vScreens[vScreenIndex-1].duration,
         'refresh': vScreens[vScreenIndex-1].refresh,
-        'goto':0, 'lines':['C,', 'C,', 'C,', 'C,', 'C,']
+        'alarm': new Date(), 'repeat': '', 'interval': 0,
+        'jump':0, 'lines':['C,', 'C,', 'C,', 'C,', 'C,']
       };
       vScreenIndex++;
       BlePageConfig(vScreenIndex - 1);
@@ -741,7 +785,13 @@ app.setStatus("BleTextChange " + d1);
         <label for="TextAlign-R">Right</label>
       </fieldset>
       
-      <select id="TextScroll" data-mini="true" data-native-menu="false"><option value="">Static text</option><option value="SL">Scroll R>L</option><option value="SR,">Scroll L>R</option><option value="TL">Ticker R>L</option><option value="TR">Ticker L>R</option></select>
+      <table><tr><td>
+        <label for="TextScroll">Animation</label>
+        <select id="TextScroll" data-mini="true" data-native-menu="false"><option value="KEEP">Keep previous text</option><option value="" selected>Static text</option><option value="SLC">Scroll R>L</option><option value="SRC,">Scroll L>R</option><option value="STLC">Ticker R>L</option><option value="STRC">Ticker L>R</option><option value="SL">Scroll R>L (no clear)</option><option value="SR,">Scroll L>R (no clear)</option><option value="STL">Ticker R>L (no clear)</option><option value="STR">Ticker L>R (no clear)</option></select>
+      </td><td width="25%">
+        <label for="ScrollSpeed">Speed</label>
+        <input id="ScrollSpeed" type="number" data-mini="true" value="100" />
+      </td></tr></table>
       
       <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
         <label for="TextBold">Bold text</label>
@@ -784,30 +834,20 @@ app.setStatus("BleTextChange " + d1);
       $('#TextAlign-C').prop('checked', false);
       $('#TextAlign-R').prop('checked', false);
 
-      $('#TextScroll').val("");
+      if(line.length == 0)
+        $('#TextScroll').val("KEEP");
+      else
+        $('#TextScroll').val("");
 
+      $('#ScrollSpeed').val("");
       $('#TextBold').prop("checked", false);
       $('#ParseDate').prop("checked", false);
 
       for(var j = 0; j < line.length; j++)
       {
-        switch(line[j])
+        var ch = line[j].toUpperCase();
+        switch(ch)
         {
-          case 'B': // Bold
-            $('#TextBold').prop("checked", true);
-          break;
-
-          case 'P': // Parser for date/time
-            $('#ParseDate').prop("checked", true);
-          break;
-
-          case 'S': // Scroll
-            //$('#TextScroll').val(x);
-          break;
-
-          case 'T': // Ticker
-          break;
-
           case 'L': // Left aligned
             $('#TextAlign-L').prop('checked', true);
           break;
@@ -818,11 +858,59 @@ app.setStatus("BleTextChange " + d1);
             $('#TextAlign-R').prop('checked', true);
           break;
           
-          case ' ':
+          case 'B': // Bold
+            $('#TextBold').prop("checked", true);
+          break;
+
+          case 'T': // Parser for date/time
+            $('#ParseDate').prop("checked", true);
+          break;
+
+          case 'S': // Scroll
+            var opcode = new Array(4);
+            opcode[0] = 'S';
+            do
+            {
+              ch = line[++j].toUpperCase();
+              switch(ch)
+              {
+                case 'L': // Roll left
+                  opcode[2] = 'L';
+                break;
+                
+                case 'R': // Roll right
+                  opcode[2] = 'R';
+                break;
+                
+                case 'T': // Ticker
+                  opcode[1] = 'T';
+                break;
+                
+                case 'C': // Start with clear line
+                  opcode[3] = 'C';
+                break;
+              }
+            }
+            while(/^[A-Z]$/i.test(ch));
+
+            $('#TextScroll').val(opcode.join(''));
+
+            if(/^\d$/.test(ch))
+            {
+              $('#ScrollSpeed').val(parseInt(line.slice(j)));
+              do
+              {
+                ch = line[++j];
+              }
+              while(/^\d$/.test(ch));
+            }
           break;
           
+          case ' ':
+          break;
+
           default:
-            console.log("LineConfigPopup uncaught '" + line[j] + "'");
+            console.log("LineConfigPopup uncaught '" + ch + "'");
           break;
         }
       }
@@ -846,30 +934,37 @@ app.setStatus("BleTextChange " + d1);
     {
       var line = parseInt($('#LineConfigPopup span#no').text()) - 1;
       var linecfg = "";
-      
-      if($('#TextAlign-L').prop('checked'))
-        linecfg += "L";
-      else if($('#TextAlign-C').prop('checked'))
-        linecfg += "C";
-      else if($('#TextAlign-R').prop('checked'))
-        linecfg += "R";
-        
-      if(linecfg.length != 0)
+
+      if($('#TextScroll').val() != 'KEEP')
       {
-        if($('#TextBold').prop('checked'))
-          linecfg += "B";
-        if($('#ParseDate').prop('checked'))
-          linecfg += "P";
-
+        if($('#TextAlign-L').prop('checked'))
+          linecfg += "L";
+        else if($('#TextAlign-C').prop('checked'))
+          linecfg += "C";
+        else if($('#TextAlign-R').prop('checked'))
+          linecfg += "R";
+      
         if(linecfg.length != 0)
-          linecfg += " ";
-    
-        linecfg += $('#TextScroll').val();
-        linecfg = linecfg.trim();
+        {
+          if($('#TextBold').prop('checked'))
+            linecfg += "B";
+          if($('#ParseDate').prop('checked'))
+            linecfg += "T";
 
-        linecfg += ","
-        if(vScreens[vScreenIndex-1].lines[line].split(",").length > 1)
-          linecfg += vScreens[vScreenIndex-1].lines[line].split(",")[1];
+          if(linecfg.length != 0)
+            linecfg += " ";
+      
+          if($('#TextScroll').val() != "")
+          {
+            linecfg += $('#TextScroll').val();
+            linecfg += $('#ScrollSpeed').val();
+          }
+          linecfg = linecfg.trim();
+
+          linecfg += ","
+          if(vScreens[vScreenIndex-1].lines[line].split(",").length > 1)
+            linecfg += vScreens[vScreenIndex-1].lines[line].split(",")[1];
+        }
       }
       vScreens[vScreenIndex-1].lines[line] = linecfg;
       ScreenUpdateLocal();
@@ -885,12 +980,14 @@ app.setStatus("BleTextChange " + d1);
     
     lineUpdate = function(no)
     {
-      var text = vScreens[vScreenIndex-1].lines[no-1].split(",")[0];
-      if(text.length == 0)
-        text += "C";  //  Default feature is center-aligned
-      text += "," + $('#screenText tr:nth-child(' + no + ') input').val();
-      vScreens[vScreenIndex-1].lines[no-1] = text;
-      BleTextChange(vScreenIndex-1, no-1, text);
+      var textline = $('#screenText tr:nth-child(' + no + ') input').val();
+      var textcfg = vScreens[vScreenIndex-1].lines[no-1].split(",")[0];
+      
+      if((textcfg.length == 0) && (textline.length != 0))
+        textcfg += "C";  //  Default feature is center-aligned
+      textcfg += "," + textline;
+      vScreens[vScreenIndex-1].lines[no-1] = textcfg;
+      BleTextChange(vScreenIndex-1, no-1, textcfg);
     }
   </script>
 
@@ -901,11 +998,26 @@ app.setStatus("BleTextChange " + d1);
     // L=Left,C=Middle,R=Right,B=Bold,P=Parsers
     // S=Scroll,T=Ticker
     var vScreens = new Array();
-    vScreens[0] = {'name':'Intro', 'effect':'RADAR,', 'duration':60, 'refresh':6, 'goto':0, 'lines':['L,intro text 1', 'CBP,intro text 2', 'R,intro text 3', 'C,intro text 4', 'L,intro text 5']};
-    vScreens[1] = {'name':'Etulipa', 'effect':'BUBBLE,', 'duration':60, 'refresh':6, 'goto':0, 'lines':['CB,E T U L I P A', 'CT,presents', 'C,', 'CT,Electronic controlled', 'CT,Copyboard']};
-    vScreens[2] = {'name':'Page', 'effect':'RADAR,', 'duration':60, 'refresh':6, 'goto':0, 'lines':['', 'L,', 'L,note that the first', 'C,line is preserved', 'R,from previous screen']};
-    vScreens[3] = {'name':'Outro', 'effect':'NONE,', 'duration':60, 'refresh':6, 'goto':0, 'lines':['L,outro text 1', 'C,outro text 2', 'R,outro text 3', 'R,outro text 4', 'R,outro text 5']};
+    vScreens[0] = {'name':'Intro', 'effect':'RADAR,10', 'lines':['L,intro text 1', 'CBT,intro text 2', 'R,intro text 3', 'C,intro text 4', 'L,intro text 5']};
+    vScreens[1] = {'name':'Etulipa', 'effect':'BUBBLE,10', 'lines':['CB,E T U L I P A', 'CT SLTC12,presents', 'C,', 'CT,Electronic controlled', 'CT,Copyboard']};
+    vScreens[2] = {'name':'Page', 'effect':'RADAR,10', 'lines':['', 'L,', 'L,note that the first', 'C,line is preserved', 'R,from previous screen']};
+    vScreens[3] = {'name':'Outro', 'effect':'RANDOM,10', 'lines':['L,outro text 1', 'C,outro text 2', 'R,outro text 3', 'R,outro text 4', 'R,outro text 5']};
 
+    for (var i in vScreens)
+    {
+      if(typeof(vScreens[i].alarm) === 'undefined')
+        vScreens[i].alarm = new Date();
+      if(typeof(vScreens[i].repeat) === 'undefined')
+        vScreens[i].repeat = '';
+      if(typeof(vScreens[i].interval) === 'undefined')
+        vScreens[i].interval = 0;
+
+      if(typeof(vScreens[i].duration) === 'undefined')
+        vScreens[i].duration = 60;
+      if(typeof(vScreens[i].refresh) === 'undefined')
+        vScreens[i].refresh = 10;
+    }
+    
     ScreenRefresh = function()
     {
       // Send screen data to display and request play at t=0
@@ -925,8 +1037,6 @@ app.setStatus("BleTextChange " + d1);
         
         // Set placeholder on line inputbox
         line.attr('placeholder', 'keep previous text');
-        line.css('font-weight', '');
-        line.css('text-align', 'center');
         
         if(splits.length >= 2)
         {
@@ -935,43 +1045,78 @@ app.setStatus("BleTextChange " + d1);
           // Remove placeholder
           if(splits[0].length != 0)
           {
+            line.css('font-weight', '');
+            line.css('text-align', 'center');
+            
             line.attr('placeholder', '');
             line.val(splits.slice(1).join(','));
           
             for(var j = 0; j < splits[0].length; j++)
             {
-              switch(splits[0][j])
+              var ch = splits[0][j].toUpperCase();
+              switch(ch)
               {
-                case 'B': // Bold
-                  line.css('font-weight', 'bold');
-                break;
-
-                case 'P': // Parser for date/time
-                  //$('#ParseDate').prop("checked", true);
-                break;
-
-                case 'S': // Scroll
-                  //$('#TextScroll').val(x);
-                break;
-
-                case 'T': // Ticker
-                break;
-
                 case 'L': // Left aligned
                   line.css('text-align', 'left');
                 break;
+                
                 case 'C': // Center aligned
                   line.css('text-align', 'center');
                 break;
+                
                 case 'R': // Right aligned
                   line.css('text-align', 'right');
                 break;
                 
+                case 'B': // Bold
+                  line.css('font-weight', 'bold');
+                break;
+
+                case 'T': // Parser for date/time
+                  //$('#ParseDate').prop("checked", true);
+                break;
+
+                case 'S': // Scroll
+                {
+                  do
+                  {
+                    ch = splits[0][++j].toUpperCase();
+                    switch(ch)
+                    {
+                      case 'L': // Roll left
+                      break;
+                      
+                      case 'R': // Roll right
+                      break;
+                      
+                      case 'T': // Ticker
+                      break;
+                      
+                      case 'C': // Start with clear line
+                      break;
+                    }
+                  }
+                  while(/^[A-Z]$/i.test(ch));
+
+                  //$('#TextScroll').val(opcode.join(''));
+
+                  if(/^\d$/.test(ch))
+                  {
+                    //$('#ScrollSpeed').val(parseInt(line.slice(j)));
+                    do
+                    {
+                      ch = splits[0][++j];
+                    }
+                    while(/^\d$/.test(ch));
+                  }
+                }
+                break;
+
                 case ' ':
                 break;
                 
                 default:
-                  console.log("ScreenUpdateLocal uncaught '" + splits[0][j] + "'");
+                  console.log("ScreenUpdateLocal uncaught '" + ch + "'");
                 break;
               }
             }
