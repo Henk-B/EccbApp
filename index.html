@@ -204,7 +204,7 @@
   <script>
     const EccbService = "36a0ca50-bb8f-4ce4-b0a3-6c79a49d533f";
     const CharDeviceInfo = "7223adac-65ff-4c32-b76a-51A02de0b828";
-    const CharPageChange = "7223adac-65ff-4c32-b76a-31901df0a818";
+    const CharNotifyCmd = "7223adac-65ff-4c32-b76a-31901df0a818";
     const CharacteristicPage = "0d0a4662-2421-4fbd-90ab-a702ff0239b6";
     const CharacteristicText = "ee5d2e57-3490-4c06-956b-5a384b1cbaa4";
     
@@ -269,13 +269,13 @@
         return;
         
       page = data[0];  // Update page number
-      vScreens[page].duration = data[3] * 256 + data[2];
-      vScreens[page].refresh = data[5] * 256 + data[4];
+      vScreens[page].duration = data[3] * 256 + data[1];
+      vScreens[page].refresh = data[5] * 256 + data[3];
       
-      idx = data[9];
-      idx = idx * 256 + data[8];
+      idx = data[8];
       idx = idx * 256 + data[7];
       idx = idx * 256 + data[6];
+      idx = idx * 256 + data[5];
       //parse "2019-10-08T12:33"
       vScreens[page].alarm = new Date();
       vScreens[page].alarm.setMinutes(idx & 0x2F); idx >>= 6;
@@ -283,19 +283,19 @@
       vScreens[page].alarm.setDate(idx & 0x1F + 1); idx >>= 5;
       vScreens[page].alarm.setMonth(idx & 0xF); idx >>= 4;
       vScreens[page].alarm.setFullYear(2010 + (idx & 0x1FF)); idx >>= 9;
-      vScreens[page].repeat = data[10];
-      vScreens[page].interval = data[11];
-      vScreens[page].jump = data[12];
+      vScreens[page].repeat = data[9];
+      vScreens[page].interval = data[10];
+      vScreens[page].jump = data[11];
     
-      for (idx = 13; idx < data.length; idx++)
+      for (idx = 12; idx < data.length; idx++)
         if(data[idx] == 0)
           break;
     
       // Get page effect and label
-      if(idx == 13)  // No effect specified
+      if(idx == 12)  // No effect specified
         vScreens[page].effect = "";
       else
-        vScreens[page].effect = String.fromCharCode.apply(null, new Uint8Array(buffer, 13, idx - 13));
+        vScreens[page].effect = String.fromCharCode.apply(null, new Uint8Array(buffer, 12, idx - 12));
       
       if(idx == data.length)
         vScreens[page].name = "";
@@ -315,7 +315,7 @@
       
       // Request page change
       if(vBleId)
-        ble.write(vBleId, EccbService, CharacteristicPage, d1, success, error);
+        ble.write(vBleId, EccbService, CharNotifyCmd, d1, success, error);
       else
         error();
     }
@@ -353,18 +353,17 @@ app.setStatus("line"+data[0]+"="+text);
     
     function BlePageConfig(page, success, error = BleError)
     {
-      var buf = new ArrayBuffer(13 + vScreens[page].effect.length + 1 + vScreens[page].name.length);
+      var buf = new ArrayBuffer(12 + vScreens[page].effect.length + 1 + vScreens[page].name.length);
       var data = new Uint8Array(buf);
       var t, len;
       
-      data[0] = 0x30;
-      data[1] = page;
+      data[0] = page;
       t = vScreens[page].duration;
+      data[1] = t % 256; t /= 256;
       data[2] = t % 256; t /= 256;
-      data[3] = t % 256; t /= 256;
       t = vScreens[page].refresh;
+      data[3] = t % 256; t /= 256;
       data[4] = t % 256; t /= 256;
-      data[5] = t % 256; t /= 256;
       //parse "2019-10-08T12:33" 
       t = vScreens[page].alarm.getDay();
       t = (t << 9) | vScreens[page].alarm.getFullYear() - 2010;
@@ -372,14 +371,14 @@ app.setStatus("line"+data[0]+"="+text);
       t = (t << 5) | vScreens[page].alarm.getDate() - 1;
       t = (t << 5) | vScreens[page].alarm.getHours();
       t = (t << 6) | vScreens[page].alarm.getMinutes();
+      data[5] = t % 256; t /= 256;
       data[6] = t % 256; t /= 256;
       data[7] = t % 256; t /= 256;
       data[8] = t % 256; t /= 256;
-      data[9] = t % 256; t /= 256;
-      data[10] = vScreens[page].repeat;
-      data[11] = vScreens[page].interval;
-      data[12] = vScreens[page].jump;
-      len = 13;
+      data[9] = vScreens[page].repeat;
+      data[10] = vScreens[page].interval;
+      data[11] = vScreens[page].jump;
+      len = 12;
 
       for (t = 0; t < vScreens[page].effect.length; t++)
         data[len++] = vScreens[page].effect.charCodeAt(t);
@@ -430,6 +429,8 @@ app.setStatus("line"+data[0]+"="+text);
       
       if(typeof(ble) !== 'undefined')
       {
+        ble.requestMtu(yourDeviceId, 512, function(x){}, BleError);
+      
         ble.startScan([], function(device)
         {
           if(device.id.slice(0, 11) === "03:80:E1:00")
@@ -471,10 +472,10 @@ app.setStatus("line"+data[0]+"="+text);
           ble.read(vBleId, EccbService, CharDeviceInfo, BleDeviceInfo, BleError);
           
           // Issue read to get current status from device
-          ble.read(vBleId, EccbService, CharPageChange, BlePageNotified, BleError);
+          ble.read(vBleId, EccbService, CharNotifyCmd, BlePageNotified, BleError);
         
           // Subscribe to page-change notifications
-          ble.startNotification(vBleId, EccbService, CharPageChange, BlePageNotified, BleError);
+          ble.startNotification(vBleId, EccbService, CharNotifyCmd, BlePageNotified, BleError);
           
           // Send time and date to device
           var d1 = new ArrayBuffer(5);
@@ -485,7 +486,7 @@ app.setStatus("line"+data[0]+"="+text);
           d2[2] = time % 256; time / 256;
           d2[3] = time % 256; time / 256;
           d2[4] = time % 256; time / 256;
-          ble.write(vBleId, EccbService, CharacteristicPage, d1, function(){}, BleError);
+          ble.write(vBleId, EccbService, CharNotifyCmd, d1, function(){}, BleError);
         },
         function(e)
         {
@@ -504,7 +505,7 @@ app.setStatus("line"+data[0]+"="+text);
         d2[0] = 0x11;
         
         // Request save data
-        ble.write(vBleId, EccbService, CharacteristicPage, d1, function(){}, BleError);
+        ble.write(vBleId, EccbService, CharNotifyCmd, d1, function(){}, BleError);
       }
     }
 
@@ -517,7 +518,7 @@ app.setStatus("line"+data[0]+"="+text);
         d2[0] = 0x10;
         
         // Request save data
-        ble.write(vBleId, EccbService, CharacteristicPage, d1, function(){}, BleError);
+        ble.write(vBleId, EccbService, CharNotifyCmd, d1, function(){}, BleError);
       }
     }
   </script>
@@ -638,9 +639,9 @@ app.setStatus("line"+data[0]+"="+text);
   </tr></table>
 
   <table id="screenText" style="text-align:center;">
-    <tr id="line1"><td><input type="text" class="eccb" data-mini="true" value="" onchange="lineUpdate(1);" onclick="app.setStatus(vScreens[vScreenIndex-1].lines[0]);" /></td>
+    <tr id="line1"><td><input type="text" class="eccb" data-mini="true" value="" onchange="lineUpdate(1);" /></td>
       <td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="lineConfig(1);"></a></td></tr>
-    <tr id="line2"><td><input type="text" class="eccb" data-mini="true" value="" onchange="lineUpdate(2);" onclick="app.setStatus(vScreens[vScreenIndex-1].lines[1]);" /></td>
+    <tr id="line2"><td><input type="text" class="eccb" data-mini="true" value="" onchange="lineUpdate(2);" /></td>
       <td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="lineConfig(2);"></a></td></tr>
     <tr id="line3"><td><input type="text" class="eccb" data-mini="true" value="" onchange="lineUpdate(3);" /></td>
       <td style="width:1%;"><a href="#" class="ui-icon-star ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-nodisc-icon ui-alt-icon ui-btn-a ui-btn-inline" onclick="lineConfig(3);"></a></td></tr>
