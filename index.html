@@ -312,11 +312,13 @@
       var d2 = new Uint8Array(d1);
       d2[0] = 0x00;
       d2[1] = page;
-app.setStatus("BlePageChange req " + page);
 
       // Request page change
       if(vBleId)
-        ble.write(vBleId, EccbService, CharNotifyCmd, d1, success, error);
+        //ble.write(vBleId, EccbService, CharNotifyCmd, d1, success, error);
+      {
+        ble.write(vBleId, EccbService, CharNotifyCmd, d1, function(e){app.setStatus("BlePageChange success " + e); success();}, function(e){app.setStatus("BlePageChange Error " + JSON.stringify(e)); error();});
+      }
       else
         error();
     }
