@@ -481,10 +481,10 @@
           var d2 = new Uint8Array(d1);
           d2[0] = 0x20;
           var time = Date.now() / 1000 | 0;
-          d2[1] = time % 256; time / 256;
-          d2[2] = time % 256; time / 256;
-          d2[3] = time % 256; time / 256;
-          d2[4] = time % 256; time / 256;
+          d2[1] = time % 256; time /= 256;
+          d2[2] = time % 256; time /= 256;
+          d2[3] = time % 256; time /= 256;
+          d2[4] = time % 256; time /= 256;
           ble.write(vBleId, EccbService, CharNotifyCmd, d1, function(){}, BleError);
         },
         function(e)
