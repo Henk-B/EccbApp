@@ -271,8 +271,8 @@
         return;
         
       page = data[0];  // Update page number
-      vScreens[page].duration = data[3] * 256 + data[1];
-      vScreens[page].refresh = data[5] * 256 + data[3];
+      vScreens[page].duration = data[2] * 256 + data[1];
+      vScreens[page].refresh = data[4] * 256 + data[3];
       
       idx = data[8];
       idx = idx * 256 + data[7];
